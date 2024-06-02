@@ -130,9 +130,9 @@ void check_home_dirs()
 
 void build_library()
 {
-    if (fs::exists(paths.src + prj + "/lib")) {
-        std::cout << "Project 'ltd' lib building is enabled."
-    }
+    //if (fs::exists(paths.src + prj + "/lib")) {
+    //    std::cout << "Project 'ltd' lib building is enabled."
+    //}
 }
 
 void resolve_home()
