@@ -3,27 +3,6 @@
 
 #include "allocators.hpp"
 
-module acme.main;
-
-import ltd.fmt;
-
-type Point : class {
-    var x : int;
-    var y : int;
-
-    pub func getPoint : () -> (int, int) const 
-    {
-        return x, y;
-    }
-};
-
-func main : () -> int
-{
-    var p = new Point{10, 10};
-
-    fmt.println("%d, %d", p.getPoint());
-}
-
 namespace ltd
 {
         /**
@@ -59,28 +38,6 @@ namespace ltd
             A allocator;
             return allocator.deallocate(blk);
         }
-    };
-
-    template <class T>
-    class object
-    {
-    private:
-        T *raw;
-
-    public:
-        object() : raw(nullptr) {}
-
-        /**
-         * @brief
-         * Member access operator 
-         */
-        inline T* operator->() { return raw; }
-
-        /**
-         * @brief
-         * Check whether this pointer is null
-         */
-        bool is_null() const { return raw == null; }
     };
 }
 #endif // _LTD_INCLUDE_OBJ_HPP_

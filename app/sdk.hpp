@@ -18,7 +18,8 @@ namespace ltd
             CMD_PWD,
             CMD_CD,
             CMD_BUILD,
-            CMD_CLEAN
+            CMD_CLEAN,
+            CMD_TEST
         };
 
         /**

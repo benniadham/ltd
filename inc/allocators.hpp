@@ -32,31 +32,11 @@ namespace ltd
      * more allocators. To use it globally, declare it as global_allocator or to
      * use it in a specific class, pass it as a template parameter.
      * 
-     * The library uses this framework for dynamoc object creation and internal allocation
-     * procedures of containers.
+     * The library uses this framework for dynamic object creation and internal allocation
+     * procedures for containers.
      */
-
     namespace mem
     {
-        /**
-         * Construct object of type T on the given memory address.
-         */
-        template<typename T, typename... Args>
-        static void construct(T *instance, Args&&... args)
-        {
-            new (instance) T(std::forward<Args>(args)...);
-        }
-
-        /**
-         * Destruct the object by calling its destructor.
-         * This does not release the memory.
-         */
-        template<typename T>
-        void destruct(T *instance)
-        {
-            (*instance).~T();
-        }
-
         /**
          * Declaration for global allocator 
          */
@@ -87,8 +67,7 @@ namespace ltd
 
             multi_ret<bool,err> owns(block mem_block);
         };
-    }
-    
-}
+    }  // namespace mem
+}  // namespce ltd
 
 #endif // _LTD_INCLUDE_ALLOCATOR_HPP_

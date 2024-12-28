@@ -70,7 +70,7 @@ namespace ltd
         void Cpp::compile_file(const String& src, const String& dst) const
         {
             auto command = fmt::sprintf("%s -std=%s -c %s -o %s", compiler, standard, src, dst);
-            fmt::println(command);
+            fmt::debug(command);
             std::system(command.c_str());
         }
 
@@ -95,7 +95,7 @@ namespace ltd
             }
 
             for(int i=0; i<entries.size(); i++) {
-                fmt::println("Compiling %d of %d...", i+1, entries.size());
+                fmt::info("Compiling %d of %d...", i+1, entries.size());
                 compile_file(entries[i].first, entries[i].second);
             }
         }
@@ -115,7 +115,7 @@ namespace ltd
 
             auto link_command = "ar rcs " + lib_target + " " + obj_files;
 
-            fmt::println(link_command.c_str());
+            fmt::debug(link_command.c_str());
             std::system(link_command.c_str());
         }
 
@@ -144,7 +144,7 @@ namespace ltd
             auto link_command = fmt::sprintf("%s -o %s %s %s %s", 
                                 compiler, target, obj_files, lib_paths_flags, lib_flags);
 
-            fmt::println(link_command.c_str());
+            fmt::debug(link_command.c_str());
             std::system(link_command.c_str());
         }
     } // namespae sdk

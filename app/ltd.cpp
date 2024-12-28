@@ -1,9 +1,15 @@
 #include "../inc/flags.hpp"
 #include "../inc/fmt.hpp"
+// #include "../inc/smartptr.hpp"
 
 #include "sdk.hpp"
 
 using namespace ltd;
+
+void cmd_test()
+{
+    fmt::println("Size: %d", sizeof(int));
+}
 
 void cmd_ls()
 {
@@ -15,16 +21,16 @@ void cmd_ls()
     String active_project = sdk::get_active_project();
     String projects_path = sdk::get_homepath() + "/projects/";
 
-    fmt::println("Total: %d", dirs.size());
+    fmt::info("Total: %d", dirs.size());
+    
     for(auto dir : dirs) {
-        
         auto timestamp = sdk::get_dir_write_time(projects_path + dir);
         auto stime = sdk::file_time_to_string(timestamp);
 
         if (dir == active_project)
-            fmt::println("  ->%.10s %s", dir, stime);
+            fmt::info("  ->%.10s %s", dir, stime);
         else
-            fmt::println("    %.10s %s", dir, stime);
+            fmt::info("    %.10s %s", dir, stime);
     }
 }
 
@@ -49,7 +55,7 @@ void cmd_build(bool debug)
     
     // We need to have active project set
     if (active_project.length() == 0) {
-        fmt::println("Active project is not set.");
+        fmt::error("Active project is not set.");
         return;
     }
 
@@ -78,13 +84,20 @@ void cmd_clean(bool debug)
 auto main(int argc, char *argv[]) -> int {
     
     if (sdk::is_homepath_set() == false) {
-        std::cout << "$LTD_HOME is not set." << std::endl;
+        fmt::error("$LTD_HOME is not set.");
         return -1;
     }
 
     Flags flag(argc, argv);
 
     sdk::parse_flags(flag);
+
+    auto [v,ve] = flag.get_int('v');
+    fmt::set_verbosity(fmt::INFO + v);
+
+    fmt::debug("Verbosity level is %d", v);
+
+    bool debug_mode = flag.is_exist('g');
 
     switch(flag.get_cmd())
     {
@@ -98,13 +111,16 @@ auto main(int argc, char *argv[]) -> int {
         cmd_cd(flag);
         break;
     case sdk::CMD_BUILD:
-        cmd_build(flag.is_exist('g'));
+        cmd_build(debug_mode);
         break;
     case sdk::CMD_CLEAN:
-        cmd_clean(flag.is_exist('g'));
+        cmd_clean(debug_mode);
+        break;
+    case sdk::CMD_TEST:
+        cmd_test();
         break;
     default:
-        fmt::println("Unrecognized command");
+        fmt::error("Unrecognized command");
     }
 
     return 0;

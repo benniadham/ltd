@@ -17,8 +17,8 @@ namespace ltd
     {
         void parse_flags(Flags& flag)
         {
-            flag.add_flag("std", "", "standards.");
-            flag.add_flag('v', 0, "verbosity");
+            flag.add_flag("std", "", "specifies cpp standards");
+            flag.add_flag('v', 0, "sets verbosity level 1-4");
             flag.add_flag('g', 0, "debug mode");
 
             flag.add_command("ls", CMD_LS, "List all projects in the workspace");
@@ -26,6 +26,7 @@ namespace ltd
             flag.add_command("cd", CMD_CD, "Change project directory");
             flag.add_command("build", CMD_BUILD, "Build the current active project");
             flag.add_command("clean", CMD_CLEAN, "Clean the current active project");
+            flag.add_command("test", CMD_TEST, "Run tests");
 
             flag.parse();
         }
@@ -147,30 +148,32 @@ namespace ltd
         {
             String build_mode = debug ? "/debug" : "/release";
 
+            fmt::debug("Build mode: %s", build_mode);
+
             // Get source file path
             String src_path = sdk::get_active_project_path() + sub_dir;
-            fmt::println(src_path);
+            fmt::debug("Source path: %s", src_path);
 
             // Determine object file path
             String dst_path = sdk::get_builds_path();
             if (fs::exists(dst_path) == false) {
                 fs::create_directory(dst_path);
             }
-
-            // fmt::println(dst_path);
+            fmt::debug("Build path: %s", dst_path);
+            
             dst_path += "/" + sdk::get_active_project();
             if (fs::exists(dst_path) == false) {
                 fs::create_directory(dst_path);
             }
 
             String build_dir = dst_path + build_mode; 
-            // fmt::println(build_dir);
+            fmt::debug("Build path: %s", build_dir);
             if (fs::exists(build_dir) == false) {
                 fs::create_directory(build_dir);
             }
 
             String obj_path = build_dir + sub_dir;
-            // fmt::println(obj_path);
+            fmt::debug("Build object path: %s", obj_path);
             if (fs::exists(obj_path) == false) {
                 fs::create_directory(obj_path);
             }
