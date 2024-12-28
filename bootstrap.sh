@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# echo $HOME
-
 if [ -z "$LTD_HOME" ]; then
     echo "Please set the \$LTD_HOME variable"
     exit
@@ -20,5 +18,4 @@ case ":$PATH:" in
     *) PATH=$PATH:$LTD_HOME; export PATH
 esac
 
-# echo $PATH
 echo "Don't forget to add $LTD_HOME to your PATH"
