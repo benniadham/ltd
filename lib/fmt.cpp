@@ -15,8 +15,10 @@ namespace ltd
 
             if (*format == '-') {
                 format++;
+                out.unsetf(std::ios::right);
                 out.setf(std::ios::left);
             } else {
+                out.unsetf(std::ios::left);
                 out.setf(std::ios::right);
             }
 
