@@ -21,5 +21,4 @@ case ":$PATH:" in
 esac
 
 # echo $PATH
-
-# echo "Don't forget to add $LTD_HOME to your PATH"
+echo "Don't forget to add $LTD_HOME to your PATH"
