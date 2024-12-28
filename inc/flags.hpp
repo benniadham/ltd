@@ -112,7 +112,7 @@ namespace ltd
 
         String at(int index) const;
 
-        void print_help(int level);
+        void print_help();
 
     private:
 

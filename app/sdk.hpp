@@ -19,7 +19,8 @@ namespace ltd
             CMD_CD,
             CMD_BUILD,
             CMD_CLEAN,
-            CMD_TEST
+            CMD_TEST,
+            CMD_HELP
         };
 
         /**

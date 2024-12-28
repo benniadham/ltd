@@ -321,22 +321,23 @@ namespace ltd
         return "";
     }
 
-    void Flags::print_help(int level) 
+    void Flags::print_help() 
     {
+        fmt::println("Commands and flags:");
         for(auto cmd : commands) {
-            fmt::println("  %-10s %s", cmd.get_command(), cmd.get_description());
+            fmt::println("  %-14s %s", cmd.get_command(), cmd.get_description());
         }
 
         fmt::println("");
 
         for (auto short_opt : shorts) {
-            fmt::println("  -%-9c %s", short_opt.get_flag(), short_opt.get_description());
+            fmt::println("  -%-13c %s", short_opt.get_flag(), short_opt.get_description());
         }
 
         fmt::println("");
 
         for (auto long_opt : longs) {
-            fmt::println("  --%-8s %s", long_opt.get_flag(), long_opt.get_description());
+            fmt::println("  --%-12s %s", long_opt.get_flag(), long_opt.get_description());
         }
     }
 } // namespace

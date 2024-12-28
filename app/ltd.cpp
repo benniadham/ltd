@@ -84,6 +84,11 @@ void cmd_clean(bool debug)
     sdk::clean_project(debug);
 }
 
+void print_usage()
+{
+    fmt::println("Usage: ltd [ -v | --verbosity=n ] [ -h ] <commands]> [<args>]\n");
+}
+
 auto main(int argc, char *argv[]) -> int {
     
     if (sdk::is_homepath_set() == false) {
@@ -98,7 +103,7 @@ auto main(int argc, char *argv[]) -> int {
     auto [v,ve] = flag.get_int('v');
     fmt::set_verbosity(fmt::INFO + v);
 
-    fmt::debug("Verbosity level is %d", v);
+    fmt::debug("ltd: Verbosity level is %d", v);
 
     bool debug_mode = flag.is_exist('g');
 
@@ -123,8 +128,9 @@ auto main(int argc, char *argv[]) -> int {
         cmd_test();
         break;
     default:
-        fmt::error("Unrecognized command");
-        flag.print_help(0);
+        fmt::error("ltd: Unrecognized command. See 'ltd help'.\n");
+        print_usage();
+        flag.print_help();
     }
 
     return 0;

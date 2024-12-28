@@ -18,6 +18,7 @@ namespace ltd
     {
         void parse_flags(Flags& flag)
         {
+            flag.add_flag("verbosity", "1", "Specifies verbosity level 1, 2, 3 or 4");
             flag.add_flag("std", "", "Specifies cpp standards");
             flag.add_flag('v', 0, "Sets verbosity level 1-4");
             flag.add_flag('g', 0, "Debug mode");
@@ -28,6 +29,7 @@ namespace ltd
             flag.add_command("build", CMD_BUILD, "Build the current active project");
             flag.add_command("clean", CMD_CLEAN, "Clean the current active project");
             flag.add_command("test", CMD_TEST, "Run tests");
+            flag.add_command("help", CMD_HELP, "Show this help");
 
             flag.parse();
         }
