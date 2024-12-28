@@ -71,7 +71,7 @@ namespace ltd
         {
             auto command = fmt::sprintf("%s -std=%s -c %s -o %s", compiler, standard, src, dst);
             fmt::debug(command);
-            std::system(command.c_str());
+            auto result = std::system(command.c_str());
         }
 
         void Cpp::compile_files(const String& src_dir, const String& obj_dir) const
@@ -116,7 +116,7 @@ namespace ltd
             auto link_command = "ar rcs " + lib_target + " " + obj_files;
 
             fmt::debug(link_command.c_str());
-            std::system(link_command.c_str());
+            auto result = std::system(link_command.c_str());
         }
 
         void Cpp::build_app(const String& obj_dir, const String& target) const
@@ -145,7 +145,7 @@ namespace ltd
                                 compiler, target, obj_files, lib_paths_flags, lib_flags);
 
             fmt::debug(link_command.c_str());
-            std::system(link_command.c_str());
+            auto result = std::system(link_command.c_str());
         }
     } // namespae sdk
 } // namespace ltd

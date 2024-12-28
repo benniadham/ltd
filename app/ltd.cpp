@@ -1,5 +1,8 @@
+#include <algorithm>
+
 #include "../inc/flags.hpp"
 #include "../inc/fmt.hpp"
+
 // #include "../inc/smartptr.hpp"
 
 #include "sdk.hpp"
@@ -121,6 +124,7 @@ auto main(int argc, char *argv[]) -> int {
         break;
     default:
         fmt::error("Unrecognized command");
+        flag.print_help(0);
     }
 
     return 0;

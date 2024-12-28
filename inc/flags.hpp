@@ -112,6 +112,8 @@ namespace ltd
 
         String at(int index) const;
 
+        void print_help(int level);
+
     private:
 
         int get_flag_id(char c) const;

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <algorithm>
 
 #include "../inc/fmt.hpp"
 
@@ -17,9 +18,9 @@ namespace ltd
     {
         void parse_flags(Flags& flag)
         {
-            flag.add_flag("std", "", "specifies cpp standards");
-            flag.add_flag('v', 0, "sets verbosity level 1-4");
-            flag.add_flag('g', 0, "debug mode");
+            flag.add_flag("std", "", "Specifies cpp standards");
+            flag.add_flag('v', 0, "Sets verbosity level 1-4");
+            flag.add_flag('g', 0, "Debug mode");
 
             flag.add_command("ls", CMD_LS, "List all projects in the workspace");
             flag.add_command("pwd", CMD_PWD, "Show currect active project");
