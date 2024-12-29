@@ -1,7 +1,7 @@
 #include <algorithm>
 
-#include "../inc/flags.hpp"
-#include "../inc/fmt.hpp"
+#include "../inc/ltd/cli_args.hpp"
+#include "../inc/ltd/fmt.hpp"
 
 // #include "../inc/smartptr.hpp"
 
@@ -16,13 +16,13 @@ void cmd_test()
 
 void cmd_ls()
 {
-    StringList dirs;
+    string_list dirs;
     sdk::get_projects_list(dirs);
 
     std::sort(dirs.begin(), dirs.end());
 
-    String active_project = sdk::get_active_project();
-    String projects_path = sdk::get_homepath() + "/projects/";
+    string active_project = sdk::get_active_project();
+    string projects_path = sdk::get_homepath() + "/projects/";
 
     fmt::info("Total: %d", dirs.size());
     
@@ -37,10 +37,13 @@ void cmd_ls()
     }
 }
 
-void cmd_cd(Flags& flags)
+void cmd_cd(cli_args& args)
 {
-    String select_project = flags.at(1);
+    auto [select_project, e] = args.at(1);
 
+    if (e != err::no_error)
+        return;
+        
     fmt::println(select_project);
 
     if (select_project.length() > 0)
@@ -63,7 +66,7 @@ void cmd_build(bool debug)
     }
 
     // Iterate project dir to get build targets
-    StringList dirs;
+    string_list dirs;
     sdk::list_project_dir(dirs);
 
     for (auto dir : dirs) {
@@ -96,18 +99,18 @@ auto main(int argc, char *argv[]) -> int {
         return -1;
     }
 
-    Flags flag(argc, argv);
+    cli_args args(argc, argv);
 
-    sdk::parse_flags(flag);
+    sdk::parse_flags(args);
 
-    auto [v,ve] = flag.get_int('v');
+    auto [v,ve] = args.get_counter('v');
     fmt::set_verbosity(fmt::INFO + v);
 
     fmt::debug("ltd: Verbosity level is %d", v);
 
-    bool debug_mode = flag.is_exist('g');
+    bool debug_mode = args.is_flag_exist('g');
 
-    switch(flag.get_cmd())
+    switch(args.get_command())
     {
     case sdk::CMD_LS:
         cmd_ls();
@@ -116,7 +119,7 @@ auto main(int argc, char *argv[]) -> int {
         cmd_pwd();
         break;
     case sdk::CMD_CD:
-        cmd_cd(flag);
+        cmd_cd(args);
         break;
     case sdk::CMD_BUILD:
         cmd_build(debug_mode);
@@ -130,7 +133,7 @@ auto main(int argc, char *argv[]) -> int {
     default:
         fmt::error("ltd: Unrecognized command. See 'ltd help'.\n");
         print_usage();
-        flag.print_help();
+        args.print_help();
     }
 
     return 0;

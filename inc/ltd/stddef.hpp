@@ -29,8 +29,8 @@ namespace ltd
         return std::tuple<Args&...>(args...);
     }
     
-    using String = std::string;
-    using StringList = std::vector<String>;
+    using string = std::string;
+    using string_list = std::vector<string>;
 
 } // namespace ltd
 

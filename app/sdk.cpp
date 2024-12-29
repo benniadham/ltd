@@ -8,7 +8,7 @@
 #include <fstream>
 #include <algorithm>
 
-#include "../inc/fmt.hpp"
+#include "../inc/ltd/fmt.hpp"
 
 #include "compiler.hpp"
 
@@ -16,22 +16,24 @@ namespace ltd
 {
     namespace sdk
     {
-        void parse_flags(Flags& flag)
+        void parse_flags(cli_args& args)
         {
-            flag.add_flag("verbosity", "1", "Specifies verbosity level 1, 2, 3 or 4");
-            flag.add_flag("std", "", "Specifies cpp standards");
-            flag.add_flag('v', 0, "Sets verbosity level 1-4");
-            flag.add_flag('g', 0, "Debug mode");
+            args.add_param("verbosity", "1", "Specifies verbosity level 1, 2, 3 or 4");
+            args.add_param("std", "", "Specifies cpp standards");
 
-            flag.add_command("ls", CMD_LS, "List all projects in the workspace");
-            flag.add_command("pwd", CMD_PWD, "Show currect active project");
-            flag.add_command("cd", CMD_CD, "Change project directory");
-            flag.add_command("build", CMD_BUILD, "Build the current active project");
-            flag.add_command("clean", CMD_CLEAN, "Clean the current active project");
-            flag.add_command("test", CMD_TEST, "Run tests");
-            flag.add_command("help", CMD_HELP, "Show this help");
+            args.add_flag('v', 0, "Sets verbosity level 1-4");
+            args.add_flag('g', 0, "Debug mode");
 
-            flag.parse();
+            args.add_command("ls",  CMD_LS, "List all projects in the workspace");
+            args.add_command("pwd", CMD_PWD, "Show currect active project");
+            args.add_command("cd",  CMD_CD, "Change project directory");
+            
+            args.add_command("build", CMD_BUILD, "Build the current active project");
+            args.add_command("clean", CMD_CLEAN, "Clean the current active project");
+            args.add_command("test",  CMD_TEST, "Run tests");
+            args.add_command("help",  CMD_HELP, "Show this help");
+
+            args.parse();
         }
 
         bool is_homepath_set()
@@ -39,7 +41,7 @@ namespace ltd
             return getenv("LTD_HOME") == NULL ? false : true;
         }
 
-        String get_homepath()
+        string get_homepath()
         {
             // Check LTD_HOME variable
             auto env_home = getenv("LTD_HOME"); 
@@ -51,13 +53,13 @@ namespace ltd
             return env_home;
         }
 
-        String get_active_project()
+        string get_active_project()
         {
-            String file_name = get_homepath() + "/.project";
+            string file_name = get_homepath() + "/.project";
 
             if(fs::exists(file_name)) {
                 std::ifstream file(file_name);
-                String project;
+                string project;
 
                 file >> project;
 
@@ -67,9 +69,9 @@ namespace ltd
             return "";
         }
 
-        void set_active_project(const String& project)
+        void set_active_project(const string& project)
         {
-            String file_name = get_homepath() + "/.project";
+            string file_name = get_homepath() + "/.project";
 
             std::ofstream file(file_name);
 
@@ -78,26 +80,26 @@ namespace ltd
             file.close();
         }
 
-        String get_active_project_path()
+        string get_active_project_path()
         {
             return get_homepath() + "/projects/" + get_active_project();
         }
 
-        String get_builds_path()
+        string get_builds_path()
         {
             return get_homepath() + "/builds";
         }
 
-        String get_active_build_path(bool debug)
+        string get_active_build_path(bool debug)
         {
-            String build_mode = debug ? "/debug" : "/release";
+            string build_mode = debug ? "/debug" : "/release";
             return  get_builds_path() + "/" + get_active_project() + build_mode; 
         }
 
-        void get_projects_list(StringList& projects)
+        void get_projects_list(string_list& projects)
         {
-            String home_path = get_homepath();
-            String project_path = home_path + "/projects";
+            string home_path = get_homepath();
+            string project_path = home_path + "/projects";
 
             if (!fs::exists(project_path))
                 return;
@@ -105,10 +107,10 @@ namespace ltd
             for(const auto& dir_entry : fs::directory_iterator(project_path)) 
             {
                 if (fs::is_directory(dir_entry)) {
-                    String dir = dir_entry.path();
+                    string dir = dir_entry.path();
                     size_t index = dir.find_last_of('/');
 
-                    String prj = dir.substr(index+1);
+                    string prj = dir.substr(index+1);
 
                     if(prj.at(0) == '.')
                         continue;
@@ -118,14 +120,14 @@ namespace ltd
             } 
         }
 
-        void list_project_dir(StringList& dirs)
+        void list_project_dir(string_list& dirs)
         {
             for(const auto& dir_entry : fs::directory_iterator(sdk::get_active_project_path())) {
                 if (fs::is_directory(dir_entry)) {
-                    String dir = dir_entry.path();
+                    string dir = dir_entry.path();
                     size_t index = dir.find_last_of('/');
 
-                    String prj = dir.substr(index+1);
+                    string prj = dir.substr(index+1);
 
                     if(prj.at(0) != '.')
                         dirs.push_back(prj);
@@ -134,12 +136,12 @@ namespace ltd
 
             struct
             {
-                bool operator()(const String& a, const String& b) const { return a < b; }
+                bool operator()(const string& a, const string& b) const { return a < b; }
             }
             customLess;
 
             // Sort dirs to prioritize library builds first
-            std::sort(dirs.begin(), dirs.end(), [] (const String& a, const String& b) 
+            std::sort(dirs.begin(), dirs.end(), [] (const string& a, const string& b) 
                                                         {
                                                             if (a.find("lib") == 0)
                                                                 return true;
@@ -147,18 +149,18 @@ namespace ltd
                                                         });
         }
 
-        void build_dir(const String& name, const String& sub_dir, bool debug)
+        void build_dir(const string& name, const string& sub_dir, bool debug)
         {
-            String build_mode = debug ? "/debug" : "/release";
+            string build_mode = debug ? "/debug" : "/release";
 
             fmt::debug("Build mode: %s", build_mode);
 
             // Get source file path
-            String src_path = sdk::get_active_project_path() + sub_dir;
+            string src_path = sdk::get_active_project_path() + sub_dir;
             fmt::debug("Source path: %s", src_path);
 
             // Determine object file path
-            String dst_path = sdk::get_builds_path();
+            string dst_path = sdk::get_builds_path();
             if (fs::exists(dst_path) == false) {
                 fs::create_directory(dst_path);
             }
@@ -169,13 +171,13 @@ namespace ltd
                 fs::create_directory(dst_path);
             }
 
-            String build_dir = dst_path + build_mode; 
+            string build_dir = dst_path + build_mode; 
             fmt::debug("Build path: %s", build_dir);
             if (fs::exists(build_dir) == false) {
                 fs::create_directory(build_dir);
             }
 
-            String obj_path = build_dir + sub_dir;
+            string obj_path = build_dir + sub_dir;
             fmt::debug("Build object path: %s", obj_path);
             if (fs::exists(obj_path) == false) {
                 fs::create_directory(obj_path);
@@ -186,17 +188,17 @@ namespace ltd
             cc.compile_files( src_path, obj_path);
 
             if (sub_dir.find("/lib")==0) {
-                String target = build_dir + "/lib" + name + ".a";
+                string target = build_dir + "/lib" + name + ".a";
                 cc.build_lib(obj_path, target);
             } else {
-                String target = build_dir + "/" + name;
+                string target = build_dir + "/" + name;
                 cc.add_lib_path(build_dir);
                 cc.add_library(name);
                 cc.build_app(obj_path, target);
             }
         }
 
-        fs::file_time_type get_dir_write_time(const String& path)
+        fs::file_time_type get_dir_write_time(const string& path)
         {
             fs::path dir_path(path);
             fs::directory_entry dir(dir_path);
@@ -212,7 +214,7 @@ namespace ltd
             return system_clock::to_time_t(sctp);
         }
 
-        String file_time_to_string(const fs::file_time_type& timestamp)
+        string file_time_to_string(const fs::file_time_type& timestamp)
         {
             std::time_t tt = to_time_t(timestamp);
             std::tm *gmt = std::gmtime(&tt);
@@ -234,7 +236,7 @@ namespace ltd
 
         void clean_project(bool debug)
         {
-            String path = get_active_build_path(debug);
+            string path = get_active_build_path(debug);
             fs::path dir_path(path);
             clear_dir(dir_path);
         }
