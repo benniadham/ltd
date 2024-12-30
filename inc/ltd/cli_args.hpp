@@ -41,20 +41,36 @@ namespace ltd
      * ```C++
      *          int main(int argc, char *argv[])
      *          {
-     *              cli_flags args;
+     *              cli_args args(argc, argv);
+     * 
      *              int debug     = 0;
      *              int verbosity = 0;
      * 
-     *              args.bind(&debug, 'g', "debug", "Build with debug information.");
-     *              args.bind(&verbosity, 'v', "verbose", "Verbose logging.");
-     *              args.parse(argc, argv);
+     *              args.add_param("verbosity", "1", "Specifies verbosity level 1, 2, 3 or 4");
+     *              args.add_param("std", "", "Specifies cpp standards");
      * 
-     *              if (arguments.size() < 2)
+     *              args.add_flag('v', 0, "Sets verbosity level 1-4");
+     *              args.add_flag('g', 0, "Debug mode");
+     * 
+     *              args.add_command("ls",  CMD_LS, "List all projects in the workspace");
+     *              args.add_command("pwd", CMD_PWD, "Show currect active project");
+     *              args.add_command("cd",  CMD_CD, "Change project directory");
+     *       
+     *              args.add_command("build", CMD_BUILD, "Build the current active project");
+     *              args.add_command("clean", CMD_CLEAN, "Clean the current active project");
+     *              args.add_command("test",  CMD_TEST, "Run tests");
+     *              args.add_command("help",  CMD_HELP, "Show this help");
+     * 
+     *              args.parse();
+     * 
+     *              if (args.size() < 2)
      *              {
      *                  print_help();
-     *                  arguments.print_help(4);
+     *                  args.print_help();
      *                  return 1;
      *              }
+     * 
+     *              // .....
      * 
      *              return 0;
      *          }
@@ -380,6 +396,15 @@ namespace ltd
          * @return int The integer value associated with the command.
          */
         int map_command(const string& name) const;
+
+        /**
+         * @brief
+         * Get the argument count.
+         * 
+         * @return size_t the number of arguments including the executable. 
+         */
+        size_t get_size() const;
+
     };  // class cli_args
 } // namespace
 

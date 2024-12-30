@@ -342,4 +342,9 @@ namespace ltd
             fmt::println("  --%-12s %s", param.get_name(), param.get_description());
         }
     }
+
+    size_t cli_args::get_size() const
+    {
+        return args.size();
+    }
 } // namespace
