@@ -32,6 +32,8 @@ namespace ltd
     using string = std::string;
     using string_list = std::vector<string>;
 
+    string_list split(const string& text, const string& delimiter);
+
 } // namespace ltd
 
 #endif // _LTD_INCLUDE_STD_ALIAS_HPP_
