@@ -137,7 +137,6 @@ namespace ltd
     {
         parameter param = parameter(name, defval, description);
         params.push_back(param);
-        fmt::println("add_param(%s)", param.get_name());
     }
 
     void cli_args::add_command(const string& name, int defval, const string& description)
@@ -320,7 +319,7 @@ namespace ltd
             return {args.at(index), err::no_error};
         }
 
-        return {"", err::index_out_of_bound};
+        return {"", err::out_of_range};
     }
 
     void cli_args::print_help() 
