@@ -1,7 +1,11 @@
 #include <algorithm>
+#include <iostream>
+#include <variant>
 
 #include "../inc/ltd/cli_args.hpp"
+#include "../inc/ltd/cli.hpp"
 #include "../inc/ltd/fmt.hpp"
+#include "../inc/ltd/stddef.hpp"
 
 // #include "../inc/smartptr.hpp"
 
@@ -11,7 +15,17 @@ using namespace ltd;
 
 void cmd_test()
 {
-    fmt::println("Size: %d", sizeof(int));
+    auto tokens = split("std=c++17", "=");
+    
+    for (auto token : tokens)
+        std::cout << token << std::endl;
+
+    string tmp;
+    std::variant<string*,int> var;
+    var = &tmp;
+
+    if(std::holds_alternative<int>(var)) std::cout << "int" << std::endl;
+    else std::cout << "strin*" << std::endl;
 }
 
 void cmd_ls()
@@ -37,7 +51,7 @@ void cmd_ls()
     }
 }
 
-void cmd_cd(cli_args& args)
+void cmd_cd(cli& args)
 {
     auto [select_project, e] = args.at(1);
 
@@ -75,9 +89,11 @@ void cmd_build(bool debug)
         } else if (dir == "lib") {
             sdk::build_dir(active_project, "/lib", debug);
         } else if (dir == "apps") {
-            fmt::println(dir);
+            fmt::println(!"Needs to implement apps");
+            exit(-1);
         } else if (dir == "libs") {
-            fmt::println(dir);
+            fmt::println(!"Needs to implement libs");
+            exit(-1);
         }
     }
 }
@@ -99,17 +115,41 @@ auto main(int argc, char *argv[]) -> int {
         return -1;
     }
 
-    cli_args args(argc, argv);
+    // cli_args args(argc, argv);
 
-    sdk::parse_flags(args);
+    // sdk::parse_flags(args);
 
-    auto [v,ve] = args.get_counter('v');
-    fmt::set_verbosity(fmt::INFO + v);
+    // auto [v,ve] = args.get_counter('v');
+    // fmt::set_verbosity(fmt::INFO + v);
 
-    fmt::debug("ltd: Verbosity level is %d", v);
+    // fmt::debug("ltd: Verbosity level is %d", v);
 
-    bool debug_mode = args.is_flag_exist('g');
+    // bool debug_mode = args.is_flag_exist('g');
 
+    cli args(argc, argv);
+
+    int verbosity = 0;
+    string cppstd;
+    int debug_mode=0;
+
+    args.bind_flag(verbosity, 'v', "Sets verbosity level 1-4");
+    args.bind_flag(debug_mode, 'g', "Debug mode");
+
+    args.bind_param(cppstd, "std", "Specifies cpp standards");
+
+    args.add_command("ls",  sdk::CMD_LS, "List all projects in the workspace");
+    args.add_command("pwd", sdk::CMD_PWD, "Show currect active project");
+    args.add_command("cd",  sdk::CMD_CD, "Change project directory");
+    
+    args.add_command("build", sdk::CMD_BUILD, "Build the current active project");
+    args.add_command("clean", sdk::CMD_CLEAN, "Clean the current active project");
+    args.add_command("test",  sdk::CMD_TEST, "Run tests");
+    args.add_command("help",  sdk::CMD_HELP, "Show this help");
+
+    //args.add_param("verbosity", "1", "Specifies verbosity level 1, 2, 3 or 4");
+
+    args.parse();
+    
     switch(args.get_command())
     {
     case sdk::CMD_LS:
