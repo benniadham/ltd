@@ -19,6 +19,7 @@ namespace ltd
 
     cli::flag_arg::flag_arg(char flag, int *read_counter, const string& description)
     {
+        this->counter = read_counter;
         this->flag = flag;
         this->description = description;
     }
@@ -223,10 +224,8 @@ namespace ltd
     {
         bool first = true;
         for(const string& arg : args) {
-
             if (first) {
                 first = false;
-
                 if (arg.at(0) != '-') {
                     cmd_value = map_command(arg);
                     continue;
@@ -235,14 +234,13 @@ namespace ltd
 
             if (arg.at(0) == '-' && arg.length() > 1) {
                 if (arg.at(1) == '-' && arg.length() > 2) {
-                    return parse_param(arg);
+                    parse_param(arg);
                 } else {
-                    return parse_flag(arg);
+                    parse_flag(arg);
                 }
-            }
-
-            return err::invalid_argument;
-        }
+            } else
+                return err::invalid_argument;
+        } // for
 
         return err::no_error;
     }
@@ -278,14 +276,21 @@ namespace ltd
         
         auto opts = arg.substr(1);
 
+        std::size_t counter = 0;
         for (auto c : opts) {
+            bool matched = false;
             for (flag_arg &opt : flags) {
-                if(opt.read_flag(c) == true)
-                    return err::no_error;
+                if(opt.read_flag(c) == true) {
+                    matched = true;
+                    counter++;
+                    break;
+                }
             }
+            if (matched == false)
+                return err::not_found;
         }
 
-        return err::not_found;
+        return err::no_error;
     }
 
     int cli::map_command(const string& name) const
