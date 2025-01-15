@@ -9,7 +9,7 @@ namespace ltd
         string token;
 
         while ((pos = text.find(delimiter, start)) != string::npos) {
-            token = text.substr(start, pos);
+            token = text.substr(start, pos-start);
             tokens.push_back(token);
             start = pos + len;
         }
