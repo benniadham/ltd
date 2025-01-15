@@ -38,7 +38,7 @@ namespace ltd
         class param_arg
         {
         private:
-            using param_value = std::variant<string*,int*,float*>;
+            using param_value = std::variant<string*,int*,float*,string_list*>;
 
             string flag;
             string description;
@@ -52,6 +52,7 @@ namespace ltd
             param_arg(const string& flag, int *value, const string& description);
             param_arg(const string& flag, float *value, const string& description);
             param_arg(const string& flag, string *value, const string& description);
+            param_arg(const string& flag, string_list *values, const string& description);
 
             /**
              * @brief
@@ -70,6 +71,7 @@ namespace ltd
             string get_description() const;
 
             bool is_string() const;
+            bool is_string_list() const;
             bool is_int() const;
             bool is_float() const;
 
@@ -160,6 +162,18 @@ namespace ltd
          */
         void bind_param(string& out_val, const string& param, const string& description);
         
+        /**
+         * @brief
+         * Bind a string list variable to list param of parameters in the argument
+         * list separated by colon ':'. I.e.:
+         *   --imports=ltd:motyf
+         * 
+         * @param out_val     The variable to receive the param value.
+         * @param param       The display name of the parameter.
+         * @param description The description text for help.
+         */
+        void bind_param(string_list& out_val, const string& param, const string& description);
+
         /**
          * @brief
          * Bind an integer variable to a param in the argument list.

@@ -76,6 +76,13 @@ namespace ltd
         this->description = description;
     }
 
+    cli::param_arg::param_arg(const string& flag, string_list *values, const string& description)
+    {
+        this->flag = flag;
+        this->value = values;
+        this->description = description;
+    }
+
     string cli::param_arg::get_flag() const
     {
         return flag;
@@ -105,6 +112,13 @@ namespace ltd
             } else if (is_float()) {
                 float *val = std::get<float*>(value);
                 *val = std::stof(param);
+            } else if (is_string_list()) {
+                string_list *values = std::get<string_list*>(value);
+                auto arg_params = split(param, ":");
+                
+                for (auto arg_param : arg_params) {
+                    values->push_back(arg_param);
+                }
             } else
                 return false;
 
@@ -117,6 +131,11 @@ namespace ltd
     bool cli::param_arg::is_string() const
     {
         return std::holds_alternative<string*>(value);
+    }
+
+    bool cli::param_arg::is_string_list() const
+    {
+        return std::holds_alternative<string_list*>(value);
     }
 
     bool cli::param_arg::is_int() const
@@ -176,6 +195,11 @@ namespace ltd
     }
 
     void cli::bind_param(string& out_val, const string& param, const string& description)
+    {
+        params.emplace_back(param, &out_val, description);
+    }
+
+    void cli::bind_param(string_list& out_val, const string& param, const string& description)
     {
         params.emplace_back(param, &out_val, description);
     }
