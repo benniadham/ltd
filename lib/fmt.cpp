@@ -193,12 +193,5 @@ namespace ltd
 
             return format;
         }
-
-        int verbosity_value = INFO;
-
-        void set_verbosity(int verbosity)
-        {
-            verbosity_value = verbosity;
-        }
     }
 }

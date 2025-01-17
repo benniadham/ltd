@@ -5,13 +5,14 @@
 #include <vector>
 #include <variant>
 
+#include "fmt.hpp"
 #include "stddef.hpp"
 #include "err.hpp"
 
 namespace ltd
 {
     class cli
-    {
+    {   
     private:
         class flag_arg
         {
@@ -19,6 +20,8 @@ namespace ltd
             char flag    = 0;
             int *counter = nullptr;
             string description;
+
+            static int log_verbosity;
 
         public:
             // ctors
@@ -265,6 +268,173 @@ namespace ltd
          * @return int The integer value associated with the command.
          */
         int map_command(const string& name) const;
+
+    public:
+        /**
+         * @brief
+         * Log level for `fmt` print functions.
+         */
+        enum log_level
+        {
+            LOG_FATAL,
+            LOG_ERROR,
+            LOG_WARN,
+            LOG_INFO,
+            LOG_DEBUG,
+            LOG_TRACE,
+        };
+
+    private:
+        static int log_level;
+
+    public:
+        /**
+         * @brief
+         * Set `fmt` print function verbosity level.
+         */
+        static void set_log_level(int level);
+
+        /**
+         * @brief
+         * Print line using verbosity level.
+         */
+        template<typename T>
+        static void vprintln(int level, T arg)
+        {
+            if(level <= log_level)
+                fmt::println(arg);
+        }
+
+        /**
+         * @brief
+         * Print line using verbosity level.
+         */
+        template<typename... Args>
+        static void vprintln(int level, const char* format, Args... args)
+        {
+            if(level <= log_level)
+                fmt::println(format, args...);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'error'
+         */
+        template<typename T>
+        static void fatal(T arg)
+        {
+            vprintln(LOG_FATAL, arg);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'error'
+         */
+        template<typename... Args>
+        static void fatal(const char* format, Args... args)
+        {
+            vprintln(LOG_FATAL, format, args...);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'error'
+         */
+        template<typename T>
+        static void error(T arg)
+        {
+            vprintln(LOG_ERROR, arg);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'error'
+         */
+        template<typename... Args>
+        static void error(const char* format, Args... args)
+        {
+            vprintln(LOG_ERROR, format, args...);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'info'
+         */
+        template<typename T>
+        static void info(T arg)
+        {
+            vprintln(LOG_INFO, arg);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'warn'
+         */
+        template<typename T>
+        static void warn(T arg)
+        {
+            vprintln(LOG_WARN, arg);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'warn'
+         */
+        template<typename... Args>
+        static void warn(const char* format, Args... args)
+        {
+            vprintln(LOG_WARN, format, args...);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'info'
+         */
+        template<typename... Args>
+        static void info(const char* format, Args... args)
+        {
+            vprintln(LOG_INFO, format, args...);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'debug'
+         */
+        template<typename T>
+        static void debug(T arg)
+        {
+            vprintln(LOG_DEBUG, arg);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'debug'
+         */
+        template<typename... Args>
+        static void debug(const char* format, Args... args)
+        {
+            vprintln(LOG_DEBUG, format, args...);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'trace'
+         */
+        template<typename T>
+        static void trace(T arg)
+        {
+            vprintln(LOG_TRACE, arg);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'trace'
+         */
+        template<typename... Args>
+        static void trace(const char* format, Args... args)
+        {
+            vprintln(LOG_TRACE, format, args...);
+        }
     };
 } // namespace ltd
 #endif // _LTD_INCLUDE_CLI_HPP_

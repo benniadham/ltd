@@ -13,21 +13,6 @@
 
 using namespace ltd;
 
-void cmd_test()
-{
-    auto tokens = split("std=c++17", "=");
-    
-    for (auto token : tokens)
-        std::cout << token << std::endl;
-
-    string tmp;
-    std::variant<string*,int> var;
-    var = &tmp;
-
-    if(std::holds_alternative<int>(var)) std::cout << "int" << std::endl;
-    else std::cout << "strin*" << std::endl;
-}
-
 void cmd_ls()
 {
     string_list dirs;
@@ -38,16 +23,16 @@ void cmd_ls()
     string active_project = sdk::get_active_project();
     string projects_path = sdk::get_homepath() + "/projects/";
 
-    fmt::info("Total: %d", dirs.size());
+    cli::info("Total: %d", dirs.size());
     
     for(auto dir : dirs) {
         auto timestamp = sdk::get_dir_write_time(projects_path + dir);
         auto stime = sdk::file_time_to_string(timestamp);
 
         if (dir == active_project)
-            fmt::info("  ->%.10s %s", dir, stime);
+            cli::info("  ->%.10s %s", dir, stime);
         else
-            fmt::info("    %.10s %s", dir, stime);
+            cli::info("    %.10s %s", dir, stime);
     }
 }
 
@@ -75,7 +60,7 @@ void cmd_build(bool debug)
     
     // We need to have active project set
     if (active_project.length() == 0) {
-        fmt::error("Active project is not set.");
+        cli::error("Active project is not set.");
         return;
     }
 
@@ -89,11 +74,11 @@ void cmd_build(bool debug)
         } else if (dir == "lib") {
             sdk::build_dir(active_project, "/lib", debug);
         } else if (dir == "apps") {
-            fmt::println(!"Needs to implement apps");
-            exit(-1);
+            cli::fatal("Needs to implement apps");
+            // exit(-1);
         } else if (dir == "libs") {
-            fmt::println(!"Needs to implement libs");
-            exit(-1);
+            cli::fatal("Needs to implement libs");
+            // exit(-1);
         }
     }
 }
@@ -111,7 +96,7 @@ void print_usage()
 auto main(int argc, char *argv[]) -> int {
     
     if (sdk::is_homepath_set() == false) {
-        fmt::error("$LTD_HOME is not set.");
+        cli::error("$LTD_HOME is not set.");
         return -1;
     }
 
@@ -131,11 +116,13 @@ auto main(int argc, char *argv[]) -> int {
     int verbosity = 0;
     string cppstd;
     int debug_mode=0;
+    string_list imports;
 
     args.bind_flag(verbosity, 'v', "Sets verbosity level 1-4");
     args.bind_flag(debug_mode, 'g', "Debug mode");
 
     args.bind_param(cppstd, "std", "Specifies cpp standards");
+    args.bind_param(imports, "imports", "List of imports to link with the project");
 
     args.add_command("ls",  sdk::CMD_LS, "List all projects in the workspace");
     args.add_command("pwd", sdk::CMD_PWD, "Show currect active project");
@@ -168,10 +155,16 @@ auto main(int argc, char *argv[]) -> int {
         cmd_clean(debug_mode);
         break;
     case sdk::CMD_TEST:
-        cmd_test();
+        
+        for(auto import : imports) {
+            fmt::println("import %s", import);
+        }
+
+        fmt::println("Debug mode: %d", debug_mode);
+        
         break;
     default:
-        fmt::error("ltd: Unrecognized command. See 'ltd help'.\n");
+        cli::error("ltd: Unrecognized command. See 'ltd help'.\n");
         print_usage();
         args.print_help();
     }

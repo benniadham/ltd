@@ -337,4 +337,11 @@ namespace ltd
 
         return {"", err::out_of_range};
     }
+
+    int cli::log_level=cli::LOG_INFO;
+
+    void cli::set_log_level(int level)
+    {
+        log_level = level;
+    }
 }

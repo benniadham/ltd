@@ -8,7 +8,7 @@
 #include <fstream>
 #include <algorithm>
 
-#include "../inc/ltd/fmt.hpp"
+#include "../inc/ltd/cli.hpp"
 
 #include "compiler.hpp"
 
@@ -153,18 +153,18 @@ namespace ltd
         {
             string build_mode = debug ? "/debug" : "/release";
 
-            fmt::debug("Build mode: %s", build_mode);
+            cli::debug("Build mode: %s", build_mode);
 
             // Get source file path
             string src_path = sdk::get_active_project_path() + sub_dir;
-            fmt::debug("Source path: %s", src_path);
+            cli::debug("Source path: %s", src_path);
 
             // Determine object file path
             string dst_path = sdk::get_builds_path();
             if (fs::exists(dst_path) == false) {
                 fs::create_directory(dst_path);
             }
-            fmt::debug("Build path: %s", dst_path);
+            cli::debug("Build path: %s", dst_path);
             
             dst_path += "/" + sdk::get_active_project();
             if (fs::exists(dst_path) == false) {
@@ -172,13 +172,13 @@ namespace ltd
             }
 
             string build_dir = dst_path + build_mode; 
-            fmt::debug("Build path: %s", build_dir);
+            cli::debug("Build path: %s", build_dir);
             if (fs::exists(build_dir) == false) {
                 fs::create_directory(build_dir);
             }
 
             string obj_path = build_dir + sub_dir;
-            fmt::debug("Build object path: %s", obj_path);
+            cli::debug("Build object path: %s", obj_path);
             if (fs::exists(obj_path) == false) {
                 fs::create_directory(obj_path);
             }
