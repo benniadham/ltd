@@ -136,6 +136,11 @@ auto main(int argc, char *argv[]) -> int {
     //args.add_param("verbosity", "1", "Specifies verbosity level 1, 2, 3 or 4");
 
     args.parse();
+
+    fmt::println("v: %d", verbosity);
+    fmt::println("g: %d", debug_mode);
+
+    cli::set_log_level(verbosity);
     
     switch(args.get_command())
     {
