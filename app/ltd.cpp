@@ -102,17 +102,6 @@ auto main(int argc, char *argv[]) -> int {
         return -1;
     }
 
-    // cli_args args(argc, argv);
-
-    // sdk::parse_flags(args);
-
-    // auto [v,ve] = args.get_counter('v');
-    // fmt::set_verbosity(fmt::INFO + v);
-
-    // fmt::debug("ltd: Verbosity level is %d", v);
-
-    // bool debug_mode = args.is_flag_exist('g');
-
     cli args(argc, argv);
 
     int verbosity   = 0;
@@ -120,6 +109,8 @@ auto main(int argc, char *argv[]) -> int {
     int global      = 0;
 
     string cppstd;
+    string run;
+    string run_args;
     
     string_list imports;
 
@@ -129,6 +120,9 @@ auto main(int argc, char *argv[]) -> int {
 
     args.bind_param(cppstd, "std", "Specifies cpp standards");
     args.bind_param(imports, "imports", "List of imports to link with the project");
+
+    args.bind_param(run, "run", "Specify executable to run after build");
+    args.bind_param(run_args, "args", "Specify arguments for running executable");
 
     args.add_command("ls",  sdk::CMD_LS, "List all projects in the workspace");
     args.add_command("pwd", sdk::CMD_PWD, "Show currect active project");
@@ -157,6 +151,16 @@ auto main(int argc, char *argv[]) -> int {
         break;
     case sdk::CMD_BUILD:
         cmd_build(debug_mode, imports);
+        if (run.length() > 0) {
+            string run_path = sdk::get_homepath() + "/builds/" + sdk::get_active_project() + "/";
+
+            run_path += debug_mode ? "debug/target" : "release/target";
+
+            string run_cmd = fmt::sprintf("%s/%s %s", run_path, run, run_args);
+            fmt::println(run_cmd);
+            auto result = std::system(run_cmd.c_str());
+        }
+
         break;
     case sdk::CMD_CLEAN:
         cmd_clean(debug_mode);
