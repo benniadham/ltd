@@ -20,6 +20,7 @@ namespace ltd
             CMD_BUILD,
             CMD_CLEAN,
             CMD_TEST,
+            CMD_DEPLOY,
             CMD_HELP
         };
 
@@ -73,6 +74,12 @@ namespace ltd
 
         /**
          * @brief
+         * Copy the project files into importable modules path.
+         */
+        void deploy_to_module_path();
+
+        /**
+         * @brief
          * Get a list of available LTD projects
          */
         void get_projects_list(string_list& projects);
@@ -87,7 +94,7 @@ namespace ltd
          * @brief
          * Build a source dir into a target binary, executable or static library.
          */
-        void build_dir(const string& name, const string& sub_dir, bool debug);
+        void build_dir(const string& name, const string& sub_dir, bool debug, string_list& imports);
 
         fs::file_time_type get_dir_write_time(const string& path);
 

@@ -70,7 +70,12 @@ namespace ltd
 
         void Cpp::compile_file(const string& src, const string& dst) const
         {
-            auto command = fmt::sprintf("%s -std=%s -c %s -o %s", compiler, standard, src, dst);
+            string inc_flags;
+            for (auto inc_path : inc_paths) {
+                inc_flags += " -I" + inc_path;
+            }
+
+            auto command = fmt::sprintf("%s -std=%s -c %s -o %s %s", compiler, standard, src, dst, inc_flags);
             cli::debug(command);
             auto result = std::system(command.c_str());
         }
@@ -136,11 +141,11 @@ namespace ltd
             // auto out_dir = get_active_build_path(debug);
             string lib_paths_flags;
             for(auto lib_path : lib_paths) 
-                lib_paths_flags += "-L" + lib_path;
+                lib_paths_flags += "-L" + lib_path + " ";
 
             string lib_flags;
             for(auto library : libraries) 
-                lib_flags += "-l" + library;
+                lib_flags += "-l" + library + " ";
 
             auto link_command = fmt::sprintf("%s -o %s %s %s %s", 
                                 compiler, target, obj_files, lib_paths_flags, lib_flags);

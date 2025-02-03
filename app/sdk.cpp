@@ -85,6 +85,27 @@ namespace ltd
             return get_homepath() + "/projects/" + get_active_project();
         }
 
+        void deploy_to_module_path()
+        {
+            string project_path = get_active_project_path();
+            string module_path = get_homepath() + "/modules/" + get_active_project();
+
+            if(!fs::exists(module_path))
+                fs::create_directory(module_path);
+
+            if(!fs::exists(module_path + "/inc") )
+                fs::create_directory(module_path + "/inc");
+
+            fs::copy(project_path + "/inc", module_path + "/inc", 
+                        fs::copy_options::recursive | 
+                        fs::copy_options::overwrite_existing);
+
+            string build_path = get_homepath() + "/builds/" + get_active_project() + "/release/target/";
+
+            fs::copy(build_path, module_path , fs::copy_options::recursive | 
+                                               fs::copy_options::overwrite_existing);
+        }
+
         string get_builds_path()
         {
             return get_homepath() + "/builds";
@@ -149,7 +170,7 @@ namespace ltd
                                                         });
         }
 
-        void build_dir(const string& name, const string& sub_dir, bool debug)
+        void build_dir(const string& name, const string& sub_dir, bool debug, string_list& imports)
         {
             string build_mode = debug ? "/debug" : "/release";
 
@@ -183,17 +204,29 @@ namespace ltd
                 fs::create_directory(obj_path);
             }
 
+            if(!fs::exists(build_dir + "/target/")) {
+                fs::create_directories(build_dir + "/target/");
+            }
+
             Cpp cc;
+
+            // Add include imports
+            for (auto import : imports) {
+                cc.add_inc_path(get_homepath() + "/modules/" + import + "/inc");
+                cc.add_lib_path(get_homepath() + "/modules/" + import);
+                cc.add_library(import);
+            }
 
             cc.compile_files( src_path, obj_path);
 
             if (sub_dir.find("/lib")==0) {
-                string target = build_dir + "/lib" + name + ".a";
+                string target = build_dir + "/target/lib" + name + ".a";
                 cc.build_lib(obj_path, target);
             } else {
-                string target = build_dir + "/" + name;
-                cc.add_lib_path(build_dir);
+                string target = build_dir + "/target/" + name;
+                cc.add_lib_path(build_dir + "/target/");
                 cc.add_library(name);
+                
                 cc.build_app(obj_path, target);
             }
         }

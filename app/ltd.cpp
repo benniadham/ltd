@@ -13,6 +13,11 @@
 
 using namespace ltd;
 
+void cmd_deploy(int global)
+{
+    sdk::deploy_to_module_path();
+}
+
 void cmd_ls()
 {
     string_list dirs;
@@ -54,7 +59,7 @@ void cmd_pwd()
     fmt::println(sdk::get_active_project());
 }
 
-void cmd_build(bool debug)
+void cmd_build(bool debug, string_list& imports)
 {
     auto active_project = sdk::get_active_project();
     
@@ -70,9 +75,9 @@ void cmd_build(bool debug)
 
     for (auto dir : dirs) {
         if (dir == "app") {
-            sdk::build_dir(active_project, "/app", debug);
+            sdk::build_dir(active_project, "/app", debug, imports);
         } else if (dir == "lib") {
-            sdk::build_dir(active_project, "/lib", debug);
+            sdk::build_dir(active_project, "/lib", debug, imports);
         } else if (dir == "apps") {
             cli::fatal("Needs to implement apps");
             // exit(-1);
@@ -113,13 +118,17 @@ auto main(int argc, char *argv[]) -> int {
 
     cli args(argc, argv);
 
-    int verbosity = 0;
+    int verbosity   = 0;
+    int debug_mode  = 0;
+    int global      = 0;
+
     string cppstd;
-    int debug_mode=0;
+    
     string_list imports;
 
     args.bind_flag(verbosity, 'v', "Sets verbosity level 1-4");
     args.bind_flag(debug_mode, 'g', "Debug mode");
+    args.bind_flag(global, 'G', "Deploy the module globally");
 
     args.bind_param(cppstd, "std", "Specifies cpp standards");
     args.bind_param(imports, "imports", "List of imports to link with the project");
@@ -131,6 +140,7 @@ auto main(int argc, char *argv[]) -> int {
     args.add_command("build", sdk::CMD_BUILD, "Build the current active project");
     args.add_command("clean", sdk::CMD_CLEAN, "Clean the current active project");
     args.add_command("test",  sdk::CMD_TEST, "Run tests");
+    args.add_command("deploy", sdk::CMD_DEPLOY, "Deploy the project as importable modules.");
     args.add_command("help",  sdk::CMD_HELP, "Show this help");
 
     //args.add_param("verbosity", "1", "Specifies verbosity level 1, 2, 3 or 4");
@@ -139,8 +149,9 @@ auto main(int argc, char *argv[]) -> int {
 
     fmt::println("v: %d", verbosity);
     fmt::println("g: %d", debug_mode);
+    fmt::println("G: %d", global);
 
-    cli::set_log_level(verbosity);
+    cli::set_log_level(verbosity + cli::LOG_INFO);
     
     switch(args.get_command())
     {
@@ -154,19 +165,19 @@ auto main(int argc, char *argv[]) -> int {
         cmd_cd(args);
         break;
     case sdk::CMD_BUILD:
-        cmd_build(debug_mode);
+        cmd_build(debug_mode, imports);
         break;
     case sdk::CMD_CLEAN:
         cmd_clean(debug_mode);
         break;
     case sdk::CMD_TEST:
-        
         for(auto import : imports) {
             fmt::println("import %s", import);
         }
-
         fmt::println("Debug mode: %d", debug_mode);
-        
+        break;
+    case sdk::CMD_DEPLOY:
+        cmd_deploy(global);
         break;
     default:
         cli::error("ltd: Unrecognized command. See 'ltd help'.\n");
