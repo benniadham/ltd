@@ -2,10 +2,9 @@
 #define _LTD_INCLUDE_SDK_HPP_
 
 #include <filesystem>
+#include "../inc/ltd/stddef.hpp"
 
 namespace fs = std::filesystem;
-
-#include "../inc/ltd/cli_args.hpp"
 
 namespace ltd
 {
@@ -23,12 +22,6 @@ namespace ltd
             CMD_DEPLOY,
             CMD_HELP
         };
-
-        /**
-         * @brief
-         * Parse the cli arguments.
-         */
-        void parse_flags(cli_args& args);
 
         /**
          * @brief

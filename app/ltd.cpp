@@ -2,12 +2,9 @@
 #include <iostream>
 #include <variant>
 
-#include "../inc/ltd/cli_args.hpp"
 #include "../inc/ltd/cli.hpp"
 #include "../inc/ltd/fmt.hpp"
 #include "../inc/ltd/stddef.hpp"
-
-// #include "../inc/smartptr.hpp"
 
 #include "sdk.hpp"
 
@@ -143,13 +140,7 @@ auto main(int argc, char *argv[]) -> int {
     args.add_command("deploy", sdk::CMD_DEPLOY, "Deploy the project as importable modules.");
     args.add_command("help",  sdk::CMD_HELP, "Show this help");
 
-    //args.add_param("verbosity", "1", "Specifies verbosity level 1, 2, 3 or 4");
-
     args.parse();
-
-    fmt::println("v: %d", verbosity);
-    fmt::println("g: %d", debug_mode);
-    fmt::println("G: %d", global);
 
     cli::set_log_level(verbosity + cli::LOG_INFO);
     
@@ -171,10 +162,6 @@ auto main(int argc, char *argv[]) -> int {
         cmd_clean(debug_mode);
         break;
     case sdk::CMD_TEST:
-        for(auto import : imports) {
-            fmt::println("import %s", import);
-        }
-        fmt::println("Debug mode: %d", debug_mode);
         break;
     case sdk::CMD_DEPLOY:
         cmd_deploy(global);

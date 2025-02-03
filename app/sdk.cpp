@@ -16,26 +16,6 @@ namespace ltd
 {
     namespace sdk
     {
-        void parse_flags(cli_args& args)
-        {
-            args.add_param("verbosity", "1", "Specifies verbosity level 1, 2, 3 or 4");
-            args.add_param("std", "", "Specifies cpp standards");
-
-            args.add_flag('v', 0, "Sets verbosity level 1-4");
-            args.add_flag('g', 0, "Debug mode");
-
-            args.add_command("ls",  CMD_LS, "List all projects in the workspace");
-            args.add_command("pwd", CMD_PWD, "Show currect active project");
-            args.add_command("cd",  CMD_CD, "Change project directory");
-            
-            args.add_command("build", CMD_BUILD, "Build the current active project");
-            args.add_command("clean", CMD_CLEAN, "Clean the current active project");
-            args.add_command("test",  CMD_TEST, "Run tests");
-            args.add_command("help",  CMD_HELP, "Show this help");
-
-            args.parse();
-        }
-
         bool is_homepath_set()
         {
             return getenv("LTD_HOME") == NULL ? false : true;
