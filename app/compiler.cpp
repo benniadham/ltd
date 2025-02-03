@@ -76,7 +76,7 @@ namespace ltd
             }
 
             auto command = fmt::sprintf("%s -std=%s -c %s -o %s %s", compiler, standard, src, dst, inc_flags);
-            cli::debug(command);
+            cli::trace(command);
             auto result = std::system(command.c_str());
         }
 
@@ -101,7 +101,8 @@ namespace ltd
             }
 
             for(int i=0; i<entries.size(); i++) {
-                cli::info("Compiling %d of %d...", i+1, entries.size());
+                fs::path file = entries[i].first;
+                cli::debug("Compiling %d of %d... %s", i+1, entries.size(), file.filename());
                 compile_file(entries[i].first, entries[i].second);
             }
         }
@@ -119,9 +120,12 @@ namespace ltd
                 }
             }
 
+            fs::path target_path = lib_target;
+            cli::info("Creating lib: %s", target_path.filename());
+
             auto link_command = "ar rcs " + lib_target + " " + obj_files;
 
-            cli::debug(link_command.c_str());
+            cli::trace(link_command.c_str());
             auto result = std::system(link_command.c_str());
         }
 
@@ -138,7 +142,30 @@ namespace ltd
                 }
             }
 
-            // auto out_dir = get_active_build_path(debug);
+            string lib_paths_flags;
+            for(auto lib_path : lib_paths) {
+                cli::debug("Add lib path -L%s", lib_path);
+                lib_paths_flags += "-L" + lib_path + " ";
+            }
+
+            string lib_flags;
+            for(auto library : libraries) {
+                cli::debug("Add lib -l%s", library);
+                lib_flags += "-l" + library + " ";
+            }
+
+            fs::path target_path = target;
+            cli::info("Linking app: %s", target_path.filename());
+
+            auto link_command = fmt::sprintf("%s -o %s %s %s %s", 
+                                compiler, target, obj_files, lib_paths_flags, lib_flags);
+
+            cli::trace(link_command.c_str());
+            auto result = std::system(link_command.c_str());
+        }
+
+        void Cpp::build_tests(const string& obj_dir, const string& target) const
+        {
             string lib_paths_flags;
             for(auto lib_path : lib_paths) 
                 lib_paths_flags += "-L" + lib_path + " ";
@@ -147,11 +174,21 @@ namespace ltd
             for(auto library : libraries) 
                 lib_flags += "-l" + library + " ";
 
-            auto link_command = fmt::sprintf("%s -o %s %s %s %s", 
-                                compiler, target, obj_files, lib_paths_flags, lib_flags);
+            for(const auto& dir_entry : fs::directory_iterator(obj_dir)) {
+                auto ext = dir_entry.path().extension();
+                if (ext == ".o") {
+                    string obj_file = dir_entry.path().c_str();
+                    string test_exec = dir_entry.path().filename().replace_extension("");
 
-            cli::debug(link_command.c_str());
-            auto result = std::system(link_command.c_str());
+                    cli::info("Linking test unit: %s", test_exec);
+
+                    auto link_command = fmt::sprintf("%s -o %s%s %s %s %s", 
+                        compiler, target, test_exec, obj_file, lib_paths_flags, lib_flags);
+
+                    cli::trace(link_command.c_str());
+                    auto result = std::system(link_command.c_str());
+                }
+            }
         }
     } // namespae sdk
 } // namespace ltd

@@ -75,12 +75,14 @@ void cmd_build(bool debug, string_list& imports)
             sdk::build_dir(active_project, "/app", debug, imports);
         } else if (dir == "lib") {
             sdk::build_dir(active_project, "/lib", debug, imports);
+        } else if (dir == "tests") {
+            sdk::build_dir(active_project, "/tests", debug, imports);
         } else if (dir == "apps") {
             cli::fatal("Needs to implement apps");
-            // exit(-1);
+            exit(-1);
         } else if (dir == "libs") {
             cli::fatal("Needs to implement libs");
-            // exit(-1);
+            exit(-1);
         }
     }
 }
@@ -92,7 +94,7 @@ void cmd_clean(bool debug)
 
 void print_usage()
 {
-    fmt::println("Usage: ltd [ -v | --verbosity=n ] [ -h ] <commands]> [<args>]\n");
+    fmt::println("Usage: ltd [ -v ] [ -h ] <commands]> [<args>]\n");
 }
 
 auto main(int argc, char *argv[]) -> int {
@@ -136,7 +138,7 @@ auto main(int argc, char *argv[]) -> int {
 
     args.parse();
 
-    cli::set_log_level(verbosity + cli::LOG_INFO);
+    cli::set_log_level(verbosity + cli::LOG_WARN);
     
     switch(args.get_command())
     {
@@ -166,6 +168,26 @@ auto main(int argc, char *argv[]) -> int {
         cmd_clean(debug_mode);
         break;
     case sdk::CMD_TEST:
+        {
+            auto mode = debug_mode ? "/debug/" : "/release/";
+            auto path = sdk::get_homepath() + "/builds/" + sdk::get_active_project() + mode + "tests/";
+
+            for(const auto& dir_entry : fs::directory_iterator(path))  {
+                if (dir_entry.is_directory())
+                    continue;
+
+                if (dir_entry.path().extension() == ".o")
+                    continue;
+                
+                auto filename = dir_entry.path().filename().replace_extension("");
+                fmt::printf("Running unit test %-13s ........................ ", filename);
+                std::cout.flush();
+
+                auto exec = dir_entry.path();
+                exec += " -a";
+                auto res = std::system(exec.c_str());
+            }
+        }
         break;
     case sdk::CMD_DEPLOY:
         cmd_deploy(global);

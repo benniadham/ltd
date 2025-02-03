@@ -61,6 +61,12 @@ namespace ltd
              * Link .o files into an executable
              */
             void build_app(const string& obj_dir, const string& target) const;
+
+            /**
+             * @brief
+             * Link .o files into test executables
+             */
+            void build_tests(const string& obj_dir, const string& target) const;
         };
     } // namespace sdk
 } // namespace ltd

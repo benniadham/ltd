@@ -154,7 +154,8 @@ namespace ltd
         {
             string build_mode = debug ? "/debug" : "/release";
 
-            cli::debug("Build mode: %s", build_mode);
+            cli::info("Building: %s", sub_dir);
+            cli::info("Build mode: %s", debug ? "DEBUG" : "RELEASE");
 
             // Get source file path
             string src_path = sdk::get_active_project_path() + sub_dir;
@@ -197,17 +198,20 @@ namespace ltd
                 cc.add_library(import);
             }
 
-            cc.compile_files( src_path, obj_path);
+            cc.compile_files(src_path, obj_path);
 
             if (sub_dir.find("/lib")==0) {
                 string target = build_dir + "/target/lib" + name + ".a";
                 cc.build_lib(obj_path, target);
-            } else {
+            } else if (sub_dir.find("/app")==0) {
                 string target = build_dir + "/target/" + name;
                 cc.add_lib_path(build_dir + "/target/");
                 cc.add_library(name);
-                
                 cc.build_app(obj_path, target);
+            } else {
+                cc.add_lib_path(build_dir + "/target/");
+                cc.add_library(name);
+                cc.build_tests(obj_path, build_dir + "/tests/");
             }
         }
 
