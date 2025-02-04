@@ -25,16 +25,16 @@ void cmd_ls()
     string active_project = sdk::get_active_project();
     string projects_path = sdk::get_homepath() + "/projects/";
 
-    cli::info("Total: %d", dirs.size());
+    fmt::println("Total: %d", dirs.size());
     
     for(auto dir : dirs) {
         auto timestamp = sdk::get_dir_write_time(projects_path + dir);
         auto stime = sdk::file_time_to_string(timestamp);
 
         if (dir == active_project)
-            cli::info("  ->%.10s %s", dir, stime);
+            fmt::println("  ->%.10s %s", dir, stime);
         else
-            cli::info("    %.10s %s", dir, stime);
+            fmt::println("    %.10s %s", dir, stime);
     }
 }
 
