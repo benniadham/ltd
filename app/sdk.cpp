@@ -70,6 +70,9 @@ namespace ltd
             string project_path = get_active_project_path();
             string module_path = get_homepath() + "/modules/" + get_active_project();
 
+            if(!fs::exists(get_homepath() + "/modules/"))
+                fs::create_directory(get_homepath() + "/modules/");
+
             if(!fs::exists(module_path))
                 fs::create_directory(module_path);
 
