@@ -12,6 +12,7 @@ echo "Building binary..."
 #g++  $1 -Ofast -std=c++17 app/ltd.cpp app/sdk.cpp app/compiler.cpp lib/cli.cpp lib/fmt.cpp lib/stddef.cpp -o $LTD_HOME/ltd
 g++ $1 -Ofast -std=c++17 app/ltd.cpp app/sdk.cpp app/compiler.cpp lib/cli.cpp lib/fmt.cpp lib/stddef.cpp -o /tmp/ltd
 
+/tmp/ltd cd ltd
 /tmp/ltd build -v
 /tmp/ltd deploy
 
