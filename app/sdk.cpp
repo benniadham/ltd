@@ -10,6 +10,7 @@
 
 #include "../inc/ltd/cli.hpp"
 
+#include "sdk.hpp"
 #include "compiler.hpp"
 
 namespace ltd
@@ -120,6 +121,30 @@ namespace ltd
                         continue;
 
                     projects.push_back(prj);
+                }
+            } 
+        }
+
+        void get_modules_list(string_list& modules)
+        {
+            string home_path = get_homepath();
+            string modules_path = home_path + "/modules";
+
+            if (!fs::exists(modules_path))
+                return;
+
+            for(const auto& dir_entry : fs::directory_iterator(modules_path)) 
+            {
+                if (fs::is_directory(dir_entry)) {
+                    string dir = dir_entry.path();
+                    size_t index = dir.find_last_of('/');
+
+                    string mod = dir.substr(index+1);
+
+                    if(mod.at(0) == '.')
+                        continue;
+
+                    modules.push_back(mod);
                 }
             } 
         }

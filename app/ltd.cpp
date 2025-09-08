@@ -25,6 +25,8 @@ void cmd_ls()
     string active_project = sdk::get_active_project();
     string projects_path = sdk::get_homepath() + "/projects/";
 
+    fmt::println("Projects");
+    fmt::println("========");
     fmt::println("Total: %d", dirs.size());
     
     for(auto dir : dirs) {
@@ -35,6 +37,27 @@ void cmd_ls()
             fmt::println("  ->%.10s %s", dir, stime);
         else
             fmt::println("    %.10s %s", dir, stime);
+    }
+}
+
+void cmd_ls_modules()
+{
+    string_list dirs;
+    sdk::get_modules_list(dirs);
+
+    std::sort(dirs.begin(), dirs.end());
+
+    string projects_path = sdk::get_homepath() + "/modules/";
+
+    fmt::println("Modules");
+    fmt::println("=======");
+    fmt::println("Total: %d", dirs.size());
+    
+    for(auto dir : dirs) {
+        auto timestamp = sdk::get_dir_write_time(projects_path + dir);
+        auto stime = sdk::file_time_to_string(timestamp);
+
+        fmt::println("    %.10s %s", dir, stime);
     }
 }
 
@@ -49,6 +72,32 @@ void cmd_cd(cli& args)
 
     if (select_project.length() > 0)
         sdk::set_active_project(select_project);
+}
+
+void cmd_get(cli& args)
+{
+    auto [query, e] = args.at(1);
+
+    if (e != err::no_error)
+        return;
+
+    if(query == "home-path") {
+        fmt::println(sdk::get_homepath());
+    } else if(query == "projects-path") {
+        fmt::println(sdk::get_homepath() + "/projects/");
+    } else if(query == "modules-path") {
+        fmt::println(sdk::get_homepath() + "/modules/");
+    } else if(query == "builds-path") {
+        fmt::println(sdk::get_homepath() + "/builds/");
+    } else if(query == "active-project") {
+        fmt::println(sdk::get_active_project());
+    } else if(query == "active-project-path") {
+        fmt::println(sdk::get_active_project_path());
+    } else if(query == "projects") {
+        cmd_ls();
+    } else if(query == "modules") {
+        cmd_ls_modules();
+    } 
 }
 
 void cmd_pwd()
@@ -136,6 +185,8 @@ auto main(int argc, char *argv[]) -> int {
     args.add_command("deploy", sdk::CMD_DEPLOY, "Deploy the project as importable modules.");
     args.add_command("help",  sdk::CMD_HELP, "Show this help");
 
+    args.add_command("get", sdk::CMD_GET, "Get some information and display it.");
+
     args.parse();
 
     cli::set_log_level(verbosity + cli::LOG_WARN);
@@ -191,6 +242,9 @@ auto main(int argc, char *argv[]) -> int {
         break;
     case sdk::CMD_DEPLOY:
         cmd_deploy(global);
+        break;
+    case sdk::CMD_GET:
+        cmd_get(args);
         break;
     default:
         cli::error("ltd: Unrecognized command. See 'ltd help'.\n");

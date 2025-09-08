@@ -20,7 +20,8 @@ namespace ltd
             CMD_CLEAN,
             CMD_TEST,
             CMD_DEPLOY,
-            CMD_HELP
+            CMD_HELP, 
+            CMD_GET
         };
 
         /**
@@ -76,6 +77,12 @@ namespace ltd
          * Get a list of available LTD projects
          */
         void get_projects_list(string_list& projects);
+
+        /**
+         * @brief
+         * Get a list of available LTD modules
+         */
+        void get_modules_list(string_list& modules);
 
         /**
          * @brief
