@@ -143,7 +143,7 @@ void cmd_clean(bool debug)
 
 void print_usage()
 {
-    fmt::println("Usage: ltd [ -v ] [ -h ] <commands]> [<args>]\n");
+    fmt::println("Usage: ltd <command> [-vgG] [<args>]\n");
 }
 
 auto main(int argc, char *argv[]) -> int {

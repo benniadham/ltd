@@ -13,6 +13,8 @@ g++ $1 -Ofast -std=c++17 app/ltd.cpp app/sdk.cpp app/compiler.cpp lib/cli.cpp li
 
 echo "Selecting 'ltd' as active project..."
 /tmp/ltd cd ltd
+/tmp/ltd build -v
+/tmp/ltd deploy
 
 echo "Building 'ltd' project..."
 /tmp/ltd build -vv
