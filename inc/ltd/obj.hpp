@@ -5,7 +5,7 @@
 
 namespace ltd
 {
-        /**
+    /**
      * @brief
      * This the default object deleter for dynamic objects.
      * 

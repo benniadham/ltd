@@ -10,6 +10,20 @@
 namespace ltd
 {
     /**
+     * @brief 
+     * Check whether a type already defined or just declared. 
+     */
+    template<typename T, typename = void>
+    constexpr bool is_defined = false;
+
+    /**
+     * @brief 
+     * Check whether a type already defined or just declared. 
+     */
+    template<typename T>
+    constexpr bool is_defined<T, decltype(typeid(T), void())> = true;
+
+    /**
      * @brief
      * Tuple definition for multiple return values support.
      * 

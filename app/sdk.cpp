@@ -10,6 +10,7 @@
 
 #include "../inc/ltd/cli.hpp"
 
+#include "sdk.hpp"
 #include "compiler.hpp"
 
 namespace ltd
@@ -124,6 +125,30 @@ namespace ltd
             } 
         }
 
+        void get_modules_list(string_list& modules)
+        {
+            string home_path = get_homepath();
+            string modules_path = home_path + "/modules";
+
+            if (!fs::exists(modules_path))
+                return;
+
+            for(const auto& dir_entry : fs::directory_iterator(modules_path)) 
+            {
+                if (fs::is_directory(dir_entry)) {
+                    string dir = dir_entry.path();
+                    size_t index = dir.find_last_of('/');
+
+                    string mod = dir.substr(index+1);
+
+                    if(mod.at(0) == '.')
+                        continue;
+
+                    modules.push_back(mod);
+                }
+            } 
+        }
+
         void list_project_dir(string_list& dirs)
         {
             for(const auto& dir_entry : fs::directory_iterator(sdk::get_active_project_path())) {
@@ -201,12 +226,22 @@ namespace ltd
                 cc.add_library(import);
             }
 
-            cc.compile_files(src_path, obj_path);
+            int files_compiled = cc.compile_files(src_path, obj_path);
 
             if (sub_dir.find("/lib")==0) {
+                if (files_compiled == 0) {
+                    cli::info("Binary is up-to-date...");
+                    return;
+                }
+
                 string target = build_dir + "/target/lib" + name + ".a";
                 cc.build_lib(obj_path, target);
             } else if (sub_dir.find("/app")==0) {
+                if (files_compiled == 0) {
+                    cli::info("Binary is up-to-date...");
+                    return;
+                }
+                
                 string target = build_dir + "/target/" + name;
                 cc.add_lib_path(build_dir + "/target/");
                 cc.add_library(name);

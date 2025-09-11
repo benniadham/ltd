@@ -7,20 +7,6 @@
 namespace ltd
 {
     /**
-     * @brief 
-     * Check whether a type already defined or just declared. 
-     */
-    template<typename T, typename = void>
-    constexpr bool is_defined = false;
-
-    /**
-     * @brief 
-     * Check whether a type already defined or just declared. 
-     */
-    template<typename T>
-    constexpr bool is_defined<T, decltype(typeid(T), void())> = true;
-
-    /**
      * @brief
      * This namespace provides functionalities for memory allocators. The framework
      * partially inspired by Andrei Alexandrescu talks regarding composables allocators.
@@ -51,6 +37,14 @@ namespace ltd
             size_t size;
         };
 
+        class allocator
+        {
+        public:
+            virtual multi_ret<block,err> allocate(size_t allocation_size) = 0;
+            virtual err deallocate(block allocated_block) = 0;
+            virtual multi_ret<bool,err> owns(block mem_block) = 0;
+        };
+        
         /**
          * The standard interface for allocators.
          */
