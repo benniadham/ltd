@@ -96,10 +96,22 @@ namespace ltd
          */
         void build_dir(const string& name, const string& sub_dir, bool debug, string_list& imports);
 
+        /**
+         * @brief
+         * Get directory write timestamp.
+         */
         fs::file_time_type get_dir_write_time(const string& path);
 
+        /**
+         * @brief
+         * Convert file_time_type to human readable string.
+         */
         string file_time_to_string(const fs::file_time_type& timestamp);
 
+        /**
+         * @brief
+         * Clean all binaries from the build directory.
+         */
         void clean_project(bool debug);
     }
 }

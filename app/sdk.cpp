@@ -226,12 +226,22 @@ namespace ltd
                 cc.add_library(import);
             }
 
-            cc.compile_files(src_path, obj_path);
+            int files_compiled = cc.compile_files(src_path, obj_path);
 
             if (sub_dir.find("/lib")==0) {
+                if (files_compiled == 0) {
+                    cli::info("Binary is up-to-date...");
+                    return;
+                }
+
                 string target = build_dir + "/target/lib" + name + ".a";
                 cc.build_lib(obj_path, target);
             } else if (sub_dir.find("/app")==0) {
+                if (files_compiled == 0) {
+                    cli::info("Binary is up-to-date...");
+                    return;
+                }
+                
                 string target = build_dir + "/target/" + name;
                 cc.add_lib_path(build_dir + "/target/");
                 cc.add_library(name);

@@ -41,8 +41,10 @@ namespace ltd
             /**
              * @brief
              * Compile all files under a directory into .o files.
+             * 
+             * @returns Number of files compiled.
              */
-            void compile_files(const string& src_dir, const string& obj_dir) const;
+            int compile_files(const string& src_dir, const string& obj_dir) const;
 
             /**
              * @brief

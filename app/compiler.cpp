@@ -80,10 +80,12 @@ namespace ltd
             auto result = std::system(command.c_str());
         }
 
-        void Cpp::compile_files(const string& src_dir, const string& obj_dir) const
+        int Cpp::compile_files(const string& src_dir, const string& obj_dir) const
         {
             Entries entries;
+            int counter = 0;
 
+            // Collecting dirty source files for compilation
             for(const auto& dir_entry : fs::directory_iterator(src_dir)) 
             {
                 auto ext = dir_entry.path().extension();
@@ -95,16 +97,33 @@ namespace ltd
                     
                     obj_file = obj_dir + "/" + obj_file.c_str();
 
-                    Entry entry = std::make_pair(src_file, obj_file);
-                    entries.push_back(entry);
+                    bool need_compile = true;
+                    if(std::filesystem::exists(obj_file)) {
+                        auto srctime = std::filesystem::last_write_time(src_file);
+                        auto objtime = std::filesystem::last_write_time(obj_file);
+
+                        need_compile = srctime > objtime;
+                    }
+                    
+                    if(need_compile) {
+                        Entry entry = std::make_pair(src_file, obj_file);
+                        entries.push_back(entry);
+                    }
                 }
             }
 
+            if(entries.size() == 0)
+                cli::info("No files found for compilation...");
+ 
             for(int i=0; i<entries.size(); i++) {
                 fs::path file = entries[i].first;
                 cli::debug("Compiling %d of %d... %s", i+1, entries.size(), file.filename());
                 compile_file(entries[i].first, entries[i].second);
+
+                counter++;
             }
+
+            return counter;
         }
 
         void Cpp::build_lib(const string& obj_dir, const string& lib_target) const
@@ -180,15 +199,27 @@ namespace ltd
                     string obj_file = dir_entry.path().c_str();
                     string test_exec = dir_entry.path().filename().replace_extension("");
 
-                    cli::info("Linking test unit: %s", test_exec);
+                    bool need_linking = true;
+                    if(std::filesystem::exists(target+test_exec)) {
+                        auto srctime = std::filesystem::last_write_time(obj_file);
+                        auto objtime = std::filesystem::last_write_time(target+test_exec);
 
-                    auto link_command = fmt::sprintf("%s -o %s%s %s %s %s", 
-                        compiler, target, test_exec, obj_file, lib_paths_flags, lib_flags);
+                        need_linking = srctime > objtime;
+                    }
 
-                    cli::trace(link_command.c_str());
-                    auto result = std::system(link_command.c_str());
+                    if(need_linking) {
+                        cli::info("Linking test unit: '%s'", test_exec);
+
+                        auto link_command = fmt::sprintf("%s -o %s%s %s %s %s", 
+                            compiler, target, test_exec, obj_file, lib_paths_flags, lib_flags);
+
+                        cli::trace(link_command.c_str());
+                        auto result = std::system(link_command.c_str());
+                    } else {
+                        cli::info("Unit test is up-to-date: '%s'", test_exec);
+                    }
                 }
             }
         }
-    } // namespae sdk
+    } // namespace sdk
 } // namespace ltd
