@@ -290,6 +290,55 @@ namespace ltd
     public:
         /**
          * @brief
+         * Function template for printf.
+         */
+        template<typename... Args>
+        static void printf(const char* format, Args... args)
+        {
+            fmt::osprintf(fmt::print_state::Next, std::cout, format, args...);
+        }
+
+        /**
+         * @brief
+         * Default printf function to print out single object without format
+        */
+        template<typename T>
+        static void printf(T arg)
+        {
+            fmt::osprintf(std::cout, arg);
+        }
+
+        /**
+         * @brief
+         * Function template for printf with carriage return.
+         */
+        template<typename... Args>
+        static void println(const char* format, Args... args)
+        {
+            fmt::osprintf(fmt::print_state::Next, std::cout, format, args...);
+            std::cout << std::endl;
+        }
+
+        /**
+         * @brief
+         * Default println function to print out single object without format
+        */
+        template<typename T>
+        static void println(T arg)
+        {
+            fmt::osprintf(std::cout, arg);
+            std::cout << std::endl;
+        }
+
+        /**
+         * @brief
+         * Flush the output buffer
+         */
+        static void flush();
+
+    public:
+        /**
+         * @brief
          * Set `fmt` print function verbosity level.
          */
         static void set_log_level(int level);
@@ -302,7 +351,7 @@ namespace ltd
         static void vprintln(int level, T arg)
         {
             if(level <= log_level)
-                fmt::println(arg);
+                println(arg);
         }
 
         /**
@@ -313,7 +362,7 @@ namespace ltd
         static void vprintln(int level, const char* format, Args... args)
         {
             if(level <= log_level)
-                fmt::println(format, args...);
+                println(format, args...);
         }
 
         /**

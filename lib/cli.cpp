@@ -311,21 +311,21 @@ namespace ltd
 
     void cli::print_help() 
     {
-        fmt::println("Commands and flags:");
+        cli::println("Commands and flags:");
         for(auto cmd : commands) {
-            fmt::println("  %-14s %s", cmd.get_name(), cmd.get_description());
+            cli::println("  %-14s %s", cmd.get_name(), cmd.get_description());
         }
 
-        fmt::println("");
+        cli::println("");
 
         for (auto flag : flags) {
-            fmt::println("  -%-13c %s", flag.get_flag(), flag.get_description());
+            cli::println("  -%-13c %s", flag.get_flag(), flag.get_description());
         }
 
-        fmt::println("");
+        cli::println("");
 
         for (auto param : params) {
-            fmt::println("  --%-12s %s", param.get_flag(), param.get_description());
+            cli::println("  --%-12s %s", param.get_flag(), param.get_description());
         }
     }
 
@@ -336,6 +336,11 @@ namespace ltd
         }
 
         return {"", err::out_of_range};
+    }
+
+    void cli::flush() 
+    {
+        std::cout.flush();
     }
 
     int cli::log_level=cli::LOG_INFO;

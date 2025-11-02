@@ -4,6 +4,7 @@
 
 #include "../inc/ltd/cli.hpp"
 #include "../inc/ltd/fmt.hpp"
+#include "../inc/ltd/log.hpp"
 #include "../inc/ltd/stddef.hpp"
 
 #include "sdk.hpp"
@@ -25,18 +26,18 @@ void cmd_ls()
     string active_project = sdk::get_active_project();
     string projects_path = sdk::get_homepath() + "/projects/";
 
-    fmt::println("Projects");
-    fmt::println("========");
-    fmt::println("Total: %d", dirs.size());
+    cli::println("Projects");
+    cli::println("========");
+    cli::println("Total: %d", dirs.size());
     
     for(auto dir : dirs) {
         auto timestamp = sdk::get_dir_write_time(projects_path + dir);
         auto stime = sdk::file_time_to_string(timestamp);
 
         if (dir == active_project)
-            fmt::println("  ->%.10s %s", dir, stime);
+            cli::println("  ->%.10s %s", dir, stime);
         else
-            fmt::println("    %.10s %s", dir, stime);
+            cli::println("    %.10s %s", dir, stime);
     }
 }
 
@@ -49,15 +50,15 @@ void cmd_ls_modules()
 
     string projects_path = sdk::get_homepath() + "/modules/";
 
-    fmt::println("Modules");
-    fmt::println("=======");
-    fmt::println("Total: %d", dirs.size());
+    cli::println("Modules");
+    cli::println("=======");
+    cli::println("Total: %d", dirs.size());
     
     for(auto dir : dirs) {
         auto timestamp = sdk::get_dir_write_time(projects_path + dir);
         auto stime = sdk::file_time_to_string(timestamp);
 
-        fmt::println("    %.10s %s", dir, stime);
+        cli::println("    %.10s %s", dir, stime);
     }
 }
 
@@ -68,7 +69,7 @@ void cmd_cd(cli& args)
     if (e != err::no_error)
         return;
         
-    fmt::println(select_project);
+    cli::println(select_project);
 
     if (select_project.length() > 0)
         sdk::set_active_project(select_project);
@@ -82,27 +83,32 @@ void cmd_get(cli& args)
         return;
 
     if(query == "home-path") {
-        fmt::println(sdk::get_homepath());
+        cli::println(sdk::get_homepath());
     } else if(query == "projects-path") {
-        fmt::println(sdk::get_homepath() + "/projects/");
+        cli::println(sdk::get_homepath() + "/projects/");
     } else if(query == "modules-path") {
-        fmt::println(sdk::get_homepath() + "/modules/");
+        cli::println(sdk::get_homepath() + "/modules/");
     } else if(query == "builds-path") {
-        fmt::println(sdk::get_homepath() + "/builds/");
+        cli::println(sdk::get_homepath() + "/builds/");
     } else if(query == "active-project") {
-        fmt::println(sdk::get_active_project());
+        cli::println(sdk::get_active_project());
     } else if(query == "active-project-path") {
-        fmt::println(sdk::get_active_project_path());
+        cli::println(sdk::get_active_project_path());
     } else if(query == "projects") {
         cmd_ls();
     } else if(query == "modules") {
         cmd_ls_modules();
-    } 
+    } else if (query == "?") {
+        cli::println("Available option:\n"
+                     "  home-path, projects-path, modules-path,\n"
+                     "  builds-path, active-project, active-project-path,\n"
+                     "  projects, modules");
+    }
 }
 
 void cmd_pwd()
 {
-    fmt::println(sdk::get_active_project());
+    cli::println(sdk::get_active_project());
 }
 
 void cmd_build(bool debug, string_list& imports)
@@ -143,7 +149,7 @@ void cmd_clean(bool debug)
 
 void print_usage()
 {
-    fmt::println("Usage: ltd <command> [-vgG] [<args>]\n");
+    cli::println("Usage: ltd <command> [-vgG] [<args>]\n");
 }
 
 auto main(int argc, char *argv[]) -> int {
@@ -210,7 +216,7 @@ auto main(int argc, char *argv[]) -> int {
             run_path += debug_mode ? "debug/target" : "release/target";
 
             string run_cmd = fmt::sprintf("%s/%s %s", run_path, run, run_args);
-            fmt::println(run_cmd);
+            cli::println(run_cmd);
             auto result = std::system(run_cmd.c_str());
         }
 
@@ -231,8 +237,8 @@ auto main(int argc, char *argv[]) -> int {
                     continue;
                 
                 auto filename = dir_entry.path().filename().replace_extension("");
-                fmt::printf("Running unit test %-13s ........................ ", filename);
-                std::cout.flush();
+                cli::printf("Running unit test %-13s ........................ ", filename);
+                cli::flush();
 
                 auto exec = dir_entry.path();
                 exec += " -a";

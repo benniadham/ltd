@@ -11,6 +11,11 @@ echo "Building minimum binary..."
 
 g++ $1 -Ofast -std=c++17 app/ltd.cpp app/sdk.cpp app/compiler.cpp lib/cli.cpp lib/fmt.cpp lib/stddef.cpp -o /tmp/ltd
 
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to build minimum binary."
+    exit 1
+fi
+
 echo "Selecting 'ltd' as active project..."
 /tmp/ltd cd ltd
 /tmp/ltd build -v
@@ -21,7 +26,5 @@ echo "Building 'ltd' project..."
 
 echo "Deploying 'ltd' binaries..."
 /tmp/ltd deploy
-
-echo "Trying to add '$LTD_HOME/modules/ltd/' to your PATH"
 
 PATH=$PATH:$LTD_HOME/modules/ltd; export PATH
