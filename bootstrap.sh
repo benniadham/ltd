@@ -9,7 +9,7 @@ echo "\$LTD_HOME is set to '$LTD_HOME'"
 
 echo "Building minimum binary..."
 
-g++ $1 -Ofast -std=c++17 app/ltd.cpp app/sdk.cpp app/compiler.cpp lib/cli.cpp lib/fmt.cpp lib/stddef.cpp -o /tmp/ltd
+g++ $1 -Ofast -std=c++17 app/ltd.cpp app/sdk.cpp app/compiler.cpp lib/cli.cpp lib/fmt.cpp lib/stddef.cpp lib/log.cpp lib/log_writer.cpp lib/log_media_console.cpp -o /tmp/ltd
 
 if [ $? -ne 0 ]; then
     echo "Error: Failed to build minimum binary."

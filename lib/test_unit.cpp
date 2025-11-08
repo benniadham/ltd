@@ -38,13 +38,13 @@ namespace ltd
         flags.parse();
 
         if (argc == 1) {
-            fmt::println("Usage: %s -havci [test-id]", argv[0]);
+            cli::println("Usage: %s -havci [test-id]", argv[0]);
             flags.print_help();
         } else if (help > 0) {
-            fmt::println("Usage: %s -havci [test-id]", argv[0]);
+            cli::println("Usage: %s -havci [test-id]", argv[0]);
             flags.print_help();
         } else if (test_count > 0) {
-            fmt::println("%d", test_cases.size());
+            cli::println("%d", test_cases.size());
         } else if (all > 0) {
             int case_no = 0;
 
@@ -52,28 +52,28 @@ namespace ltd
                 test_case();
                 case_no++;
                 if (failed) {
-                    fmt::println("Case no %d failed", case_no);
+                    cli::println("Case no %d failed", case_no);
                     break;
                 }
             }
 
             if (failed == false) {
-                fmt::println("-ok-");
+                cli::println("-ok-");
             }
 
         } else if (test_id >= 0) {
             if (test_id >= 0 && test_id < test_cases.size()) {
                 test_cases[test_id]();
                 if (failed == false)
-                    fmt::println("-ok-");
+                    cli::println("-ok-");
             } else {
-                fmt::println("Invalid test id.");
-                fmt::println("Specify the test id you want to run or use no argument to get the number of test case.");
+                cli::println("Invalid test id.");
+                cli::println("Specify the test id you want to run or use no argument to get the number of test case.");
             }
         } else {
-            fmt::println("Invalid use of program arguments.");
-            fmt::println("Specify the test id you want to run or use no argument to get the number of test case.");
-            fmt::println("Usage: %s -havci [test-id]", argv[0]);
+            cli::println("Invalid use of program arguments.");
+            cli::println("Specify the test id you want to run or use no argument to get the number of test case.");
+            cli::println("Usage: %s -havci [test-id]", argv[0]);
             flags.print_help();       
         }
     }
@@ -81,11 +81,11 @@ namespace ltd
     void test_unit::expect(const std::string& test_value, const std::string& expected_value)
     {
         if (verbosity > 0)
-            fmt::println("Expected: %s, Value: %s", expected_value, test_value);
+            cli::println("Expected: %s, Value: %s", expected_value, test_value);
 
         if (test_value != expected_value) {
             if (verbosity == 0)
-                fmt::println("Expected: %s, Value: %s", expected_value, test_value);
+                cli::println("Expected: %s, Value: %s", expected_value, test_value);
             failed = true;
         }
     }
@@ -93,11 +93,11 @@ namespace ltd
     void test_unit::expect(int test_value, int expected_value)
     {
         if (verbosity > 0)
-            fmt::println("Expected: %d, Value: %d", expected_value, test_value);
+            cli::println("Expected: %d, Value: %d", expected_value, test_value);
 
         if (test_value != expected_value) {
             if (verbosity == 0)
-                fmt::println("Expected: %d, Value: %d", expected_value, test_value);
+                cli::println("Expected: %d, Value: %d", expected_value, test_value);
             failed = true;
         }
     }
@@ -105,11 +105,11 @@ namespace ltd
     void test_unit::expect(double test_value, double expected_value)
     {
         if (verbosity > 0)
-            fmt::println("Expected: %f, Value: %f", expected_value, test_value);
+            cli::println("Expected: %f, Value: %f", expected_value, test_value);
 
         if (test_value != expected_value) {
             if (verbosity == 0)
-                fmt::println("Expected: %f, Value: %f", expected_value, test_value);
+                cli::println("Expected: %f, Value: %f", expected_value, test_value);
             failed = true;
         }
     }

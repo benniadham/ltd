@@ -117,7 +117,7 @@ void cmd_build(bool debug, string_list& imports)
     
     // We need to have active project set
     if (active_project.length() == 0) {
-        cli::error("Active project is not set.");
+        log::error("Active project is not set.");
         return;
     }
 
@@ -133,10 +133,10 @@ void cmd_build(bool debug, string_list& imports)
         } else if (dir == "tests") {
             sdk::build_dir(active_project, "/tests", debug, imports);
         } else if (dir == "apps") {
-            cli::fatal("Needs to implement apps");
+            log::fatal("Needs to implement apps");
             exit(-1);
         } else if (dir == "libs") {
-            cli::fatal("Needs to implement libs");
+            log::fatal("Needs to implement libs");
             exit(-1);
         }
     }
@@ -154,8 +154,10 @@ void print_usage()
 
 auto main(int argc, char *argv[]) -> int {
     
+    log::init_console_logger();
+
     if (sdk::is_homepath_set() == false) {
-        cli::error("$LTD_HOME is not set.");
+        log::error("$LTD_HOME is not set.");
         return -1;
     }
 
@@ -193,10 +195,13 @@ auto main(int argc, char *argv[]) -> int {
 
     args.add_command("get", sdk::CMD_GET, "Get some information and display it.");
 
+    // Parse the command line arguments
     args.parse();
 
-    cli::set_log_level(verbosity + cli::LOG_WARN);
-    
+    // Sets the verbosity level
+    log::set_verbosity(verbosity);
+
+    // Process the Command
     switch(args.get_command())
     {
     case sdk::CMD_LS:
@@ -210,6 +215,7 @@ auto main(int argc, char *argv[]) -> int {
         break;
     case sdk::CMD_BUILD:
         cmd_build(debug_mode, imports);
+
         if (run.length() > 0) {
             string run_path = sdk::get_homepath() + "/builds/" + sdk::get_active_project() + "/";
 
@@ -253,7 +259,7 @@ auto main(int argc, char *argv[]) -> int {
         cmd_get(args);
         break;
     default:
-        cli::error("ltd: Unrecognized command. See 'ltd help'.\n");
+        log::error("ltd: Unrecognized command. See 'ltd help'.\n");
         print_usage();
         args.print_help();
     }
