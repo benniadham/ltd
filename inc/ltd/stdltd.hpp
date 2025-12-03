@@ -6,11 +6,12 @@
 
 #include "err.hpp"
 #include "stddef.hpp"
-#include "cli.hpp"
+//#include "cli.hpp"
 
 namespace ltd
 {
     /**
+     * @brief
      * Construct object of type T on the given memory address.
      */
     template<typename T, typename... Args>
@@ -20,6 +21,7 @@ namespace ltd
     }
 
     /**
+     * @brief
      * Destruct the object by calling its destructor.
      * This does not release the memory.
      */
@@ -30,7 +32,8 @@ namespace ltd
     }   
 
     /**
-     * 
+     * @brief
+     * Interface for memory pools.
      */
     struct memory_pool
     {
@@ -39,7 +42,8 @@ namespace ltd
     };
 
     /**
-     * 
+     * @brief
+     * Default deleter for reference counters.
      */
     template<class T>
     struct default_dltr
@@ -52,7 +56,8 @@ namespace ltd
     };
 
     /**
-     * 
+     * @brief
+     * Deleter for object<T,D> of Plain Old C++ Object
      */
     template<class T>
     struct cpp_dltr
@@ -64,7 +69,8 @@ namespace ltd
     };
 
     /**
-     * 
+     * @brief
+     * Reference counter struct for reference counting  mechanism.
      */
     struct ref_counter
     {
@@ -75,9 +81,9 @@ namespace ltd
         ref_counter() = delete;
         
         /**
-             * @brief
-             * Parameterized constructor
-             */
+         * @brief
+         * Parameterized constructor
+         */
         ref_counter(memory_pool *pool) : deallocator(pool) {}
 
         /**
@@ -135,12 +141,25 @@ namespace ltd
             return counter.load(std::memory_order_acquire);
         }
 
+        /**
+         * @brief
+         * Get the memory_pool* for this reference counter.
+         */
+        inline memory_pool *get_deallocator() const noexcept
+        {
+            return deallocator;
+        }
+
     private:
         memory_pool * deallocator;        
         std::atomic<int32_t> counter{0};
         uint32_t flag{0};
     };
 
+    /**
+     * @brief
+     * Factory class for creating dynamic ref_counter.
+     */
     struct rc_factory
     {
         static ref_counter* create_ref_counter(memory_pool *pool) noexcept;
@@ -154,86 +173,132 @@ namespace ltd
     template <class T, class D = default_dltr<T>>
     class pointer
     {
-        private:
-            T *raw_ptr;
-            ref_counter *ref_cnt;       
+    private:
+        T *raw_ptr;
+        ref_counter *ref_cnt;       
 
-        public:
-            /**
-             * @brief
-             * Default constructor
-             */
-            pointer() noexcept : raw_ptr(nullptr), ref_cnt(nullptr) {}      
-            
-            /**
-             * @brief
-             * Parameterized constructor
-             */
-            pointer(T *pointer, ref_counter *rc) noexcept : raw_ptr(pointer), ref_cnt(rc) 
-            {
-                if (ref_cnt != nullptr) {
-                    ref_cnt->increment();
-                }
+    public:
+        /**
+         * @brief
+         * Default constructor
+         */
+        pointer() noexcept : raw_ptr(nullptr), ref_cnt(nullptr) {}      
+        
+        /**
+         * @brief
+         * Parameterized constructor
+         */
+        pointer(T *pointer, ref_counter *rc) noexcept : raw_ptr(pointer), ref_cnt(rc) 
+        {
+            if (ref_cnt != nullptr) {
+                ref_cnt->increment();
             }
+        }
 
-            /**
-             * @brief
-             * Move constructor
-             */
-            pointer(pointer<T> &&other) noexcept {
-                raw_ptr       = other.raw_ptr;
-                other.raw_ptr = nullptr;
+        /**
+         * @brief
+         * Move constructor
+         */
+        pointer(pointer<T,D> &&other) noexcept {
+            raw_ptr       = other.raw_ptr;
+            other.raw_ptr = nullptr;
 
-                ref_cnt        = other.ref_cnt;
-                other.ref_cnt  = nullptr;
-            }   
+            ref_cnt        = other.ref_cnt;
+            other.ref_cnt  = nullptr;
+        }   
 
-            /**
-             * @brief
-             * Copy constructor
-             */
-            pointer(pointer<T> &other) noexcept {
-                if (ref_cnt != nullptr) {
-                    ref_cnt->increment();
+        /**
+         * @brief
+         * Copy constructor
+         */
+        pointer(pointer<T,D> &other) noexcept {
+            if (ref_cnt == nullptr && other.is_valid()) {
+                raw_ptr = other.raw_ptr;
+                ref_cnt = other.ref_cnt;  
+                
+                ref_cnt->increment();
+            }                
+        }
 
-                    raw_ptr = other.raw_ptr;
-                    ref_cnt = other.ref_cnt;                
-                }                
-            }
-            
-            /**
-             * @brief
-             * Member access operator 
-             */
-            inline T* operator->() const noexcept { return raw_ptr; }
-            
-            /**
-             * @brief
-             * Check whether this pointer is null
-             */     
-            
-            inline bool is_null() const noexcept { return raw_ptr == nullptr; }            
-
-            /**
-             * @brief
-             * Destructor
-             */
-            ~pointer()
-            {
-                if (ref_cnt != nullptr) {
-                    if (ref_cnt->decrement() == 0) {
-                        static_assert(ref_cnt->is_valid()==false, "Invalid pointer<T> state");
-
-                        D deleter;
-                        deleter(raw_ptr, ref_cnt->deallocator);
-
-                        rc_factory::destroy_ref_counter(ref_cnt);
-
-                        raw_ptr = nullptr;
-                        ref_cnt = nullptr;
-                    }
-                }
+        /**
+         * @brief
+         * Assignment operator is deleted because `object` cannot be copied.
+         * 
+         * @param other pointer<T,D> reference to copy from.
+         * @return pointer<T,D>&
+         */
+        pointer<T,D>& operator=(pointer<T,D>& other) 
+        {
+            if (ref_cnt == nullptr && other.is_valid()) {
+                raw_ptr = other.raw_ptr;
+                ref_cnt = other.ref_cnt;  
+                
+                ref_cnt->increment();
             }            
+            
+            return *this;
+        }
+
+        /**
+         * @brief
+         * Assignment operator for rvalue pointer<T,D> object.
+         * 
+         * @param other pointer<T,D> reference to copy from.
+         * @return pointer<T,D>&
+         */
+        pointer<T,D>& operator=(pointer<T,D>&& other) 
+        {
+            raw_ptr       = other.raw_ptr;
+            other.raw_ptr = nullptr;
+
+            ref_cnt        = other.ref_cnt;
+            other.ref_cnt  = nullptr;   
+            
+            return *this; 
+        }
+        
+        /**
+         * @brief
+         * Member access operator 
+         */
+        inline T* operator->() const noexcept { 
+            return raw_ptr; 
+        }
+        
+        /**
+         * @brief
+         * Check whether this pointer is null
+         */     
+        inline bool is_null() const noexcept { 
+            return raw_ptr == nullptr; 
+        }  
+        
+        /**
+         * @brief
+         * Checks this pointer validity
+         */
+        inline bool is_valid() const noexcept { 
+            return !is_null() && ref_cnt->is_valid(); 
+        }
+
+        /**
+         * @brief
+         * Destructor
+         */
+        ~pointer()
+        {
+            if (ref_cnt != nullptr) {
+                if (ref_cnt->decrement() == 0) {
+                    D deleter;
+                    deleter(raw_ptr, ref_cnt->get_deallocator());
+
+                    rc_factory::destroy_ref_counter(ref_cnt);
+
+                    raw_ptr = nullptr;
+                    ref_cnt = nullptr;
+                }
+            }
+        }            
     };
 
     /**
@@ -264,7 +329,7 @@ namespace ltd
          * @brief
          * Move constructor
          */
-        object(object<T> &&other) noexcept {
+        object(object<T,D> &&other) noexcept {
             raw_ptr       = other.raw_ptr;
             other.raw_ptr = nullptr;
 
@@ -274,17 +339,11 @@ namespace ltd
 
         /**
          * @brief
-         * Copy constructor (deleted)
-         */
-        object(const object<T> &other) = delete;
-
-        /**
-         * @brief
          * Copy constructors are deleted because this class is not copy-able.
          * 
          * @param other
          */
-        // object(const object& other) = delete;
+        object(const object<T,D>& other) = delete;
 
         /**
          * @brief
@@ -293,7 +352,22 @@ namespace ltd
          * @param other
          * @return ptr&
          */
-        object& operator=(const object& other) = delete;
+        object<T,D>& operator=(const object<T,D>& other) = delete;
+
+        /**
+         * @brief
+         * Assignment operator for rvalues.
+         * 
+         * @param other
+         * @return ptr&
+         */
+        object<T,D>& operator=(object<T,D>&& other) {
+            raw_ptr       = other.raw_ptr;
+            other.raw_ptr = nullptr;
+
+            holder        = other.holder;
+            other.holder  = std::monostate{};
+        }
 
         /**
          * @brief
@@ -323,7 +397,7 @@ namespace ltd
         uint32_t get_reference_count() const noexcept
         {
             if(is_referenced()) {
-                std::get<ref_counter*>(holder)->count();
+                return std::get<ref_counter*>(holder)->count();
             }
 
             return 0;
@@ -333,7 +407,7 @@ namespace ltd
          * @brief
          * Get a reference pointer to this object.
          */
-        pointer<T> get_reference() noexcept
+        pointer<T,D> get_reference() noexcept
         {
             ref_counter* rc = nullptr;
 
@@ -351,7 +425,7 @@ namespace ltd
                 holder = rc;
             }
 
-            pointer<T> ptr(raw_ptr, rc);
+            pointer<T,D> ptr(raw_ptr, rc);
             return ptr;
         }
 
@@ -375,6 +449,11 @@ namespace ltd
         }
     };
 
+    /**
+     * @brief
+     * Create object<T,D> by creating the dynamically allocated object with 
+     * given memory pool.
+     */
     template<typename T, typename... Args>
     multi_ret<object<T>,err> create_object(memory_pool *pool, Args&&... args) noexcept
     {
@@ -393,6 +472,10 @@ namespace ltd
         return {std::move(obj), err::no_error}; 
     }
 
+    /**
+     * @brief
+     * Create object<T,D> by attaching POCO.
+     */
     template<typename T, typename... Args>
     object<T,cpp_dltr<T>> attach_object(T *ptr) noexcept
     {
