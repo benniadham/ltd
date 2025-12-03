@@ -216,6 +216,7 @@ auto main(int argc, char *argv[]) -> int {
     case sdk::CMD_BUILD:
         cmd_build(debug_mode, imports);
 
+        // Run the built executable if specified
         if (run.length() > 0) {
             string run_path = sdk::get_homepath() + "/builds/" + sdk::get_active_project() + "/";
 

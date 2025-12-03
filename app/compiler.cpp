@@ -177,7 +177,7 @@ namespace ltd
             fs::path target_path = target;
             log::info("Linking app: %s", target_path.filename());
 
-            auto link_command = fmt::sprintf("%s -o %s %s %s %s", 
+            auto link_command = fmt::sprintf("%s -o %s %s %s %s -lstdc++exp", 
                                 compiler, target, obj_files, lib_paths_flags, lib_flags);
 
             log::trace(link_command.c_str());
@@ -211,7 +211,7 @@ namespace ltd
                     if(need_linking) {
                         log::info("Linking test unit: '%s'", test_exec);
 
-                        auto link_command = fmt::sprintf("%s -o %s%s %s %s %s", 
+                        auto link_command = fmt::sprintf("%s -o %s%s %s %s %s -lstdc++exp", 
                             compiler, target, test_exec, obj_file, lib_paths_flags, lib_flags);
 
                         log::trace(link_command.c_str());

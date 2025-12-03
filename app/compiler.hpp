@@ -11,7 +11,7 @@ namespace ltd
         {
         private:
             string compiler = "g++";
-            string standard = "c++17";
+            string standard = "c++23";
             bool debug = false;
 
             string_list inc_paths;
