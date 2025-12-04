@@ -2,28 +2,6 @@
 
 namespace ltd
 {
-    ref_counter_pool* ref_counter_pool::get_instance() noexcept
-    {
-        static ref_counter_pool instance;
-        return &instance;
-    }
-
-    multi_ret<void*,err> ref_counter_pool::allocate() noexcept
-    {
-        void *ptr = std::malloc(sizeof(ref_counter));
-
-        if(ptr == nullptr) 
-            return {nullptr, err::allocation_failure};
-
-        return {ptr, err::no_error};
-    }
-
-    err ref_counter_pool::deallocate(void* allocated_rc) noexcept
-    {
-        std::free(allocated_rc);
-        return err::no_error;
-    }
-
     system_memory_pool* system_memory_pool::get_instance() noexcept
     {
         static system_memory_pool instance;
@@ -47,6 +25,14 @@ namespace ltd
         return err::no_error;
     }
 
+    global_allocator *global_allocator::get_instance()
+    {
+        static global_allocator instance;
+        return &instance;
+    }
+ 
+    // Global allocator methods
+    // Temporary simple implementation using new/delete
     multi_ret<void*,memory_pool*,err> global_allocator::allocate(size_t allocation_size) noexcept
     {
         void *ptr = ::operator new(allocation_size, std::nothrow);
@@ -58,6 +44,8 @@ namespace ltd
         return {ptr, this, err::no_error};
     }
 
+    // Global allocator methods
+    // Temporary simple implementation using new/delete
     err global_allocator::deallocate(void  *allocated_ptr) noexcept
     {
         ::operator delete(allocated_ptr);
