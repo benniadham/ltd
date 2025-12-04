@@ -6,6 +6,7 @@ namespace fs = std::filesystem;
 
 #include "../inc/ltd/fmt.hpp"
 #include "../inc/ltd/cli.hpp"
+#include "../inc/ltd/log.hpp"
 
 namespace ltd
 {
@@ -76,7 +77,7 @@ namespace ltd
             }
 
             auto command = fmt::sprintf("%s -std=%s -c %s -o %s %s", compiler, standard, src, dst, inc_flags);
-            cli::trace(command);
+            log::trace(command);
             auto result = std::system(command.c_str());
         }
 
@@ -113,11 +114,11 @@ namespace ltd
             }
 
             if(entries.size() == 0)
-                cli::info("No files found for compilation...");
+                log::warn("No files found for compilation...");
  
             for(int i=0; i<entries.size(); i++) {
                 fs::path file = entries[i].first;
-                cli::debug("Compiling %d of %d... %s", i+1, entries.size(), file.filename());
+                log::info("Compiling %d of %d... %s", i+1, entries.size(), file.filename());
                 compile_file(entries[i].first, entries[i].second);
 
                 counter++;
@@ -140,11 +141,11 @@ namespace ltd
             }
 
             fs::path target_path = lib_target;
-            cli::info("Creating lib: %s", target_path.filename());
+            log::info("Creating lib: %s", target_path.filename());
 
             auto link_command = "ar rcs " + lib_target + " " + obj_files;
 
-            cli::trace(link_command.c_str());
+            log::trace(link_command.c_str());
             auto result = std::system(link_command.c_str());
         }
 
@@ -163,23 +164,23 @@ namespace ltd
 
             string lib_paths_flags;
             for(auto lib_path : lib_paths) {
-                cli::debug("Add lib path -L%s", lib_path);
+                log::debug("Add lib path -L%s", lib_path);
                 lib_paths_flags += "-L" + lib_path + " ";
             }
 
             string lib_flags;
             for(auto library : libraries) {
-                cli::debug("Add lib -l%s", library);
+                log::debug("Add lib -l%s", library);
                 lib_flags += "-l" + library + " ";
             }
 
             fs::path target_path = target;
-            cli::info("Linking app: %s", target_path.filename());
+            log::info("Linking app: %s", target_path.filename());
 
-            auto link_command = fmt::sprintf("%s -o %s %s %s %s", 
+            auto link_command = fmt::sprintf("%s -o %s %s %s %s -lstdc++exp", 
                                 compiler, target, obj_files, lib_paths_flags, lib_flags);
 
-            cli::trace(link_command.c_str());
+            log::trace(link_command.c_str());
             auto result = std::system(link_command.c_str());
         }
 
@@ -208,15 +209,15 @@ namespace ltd
                     }
 
                     if(need_linking) {
-                        cli::info("Linking test unit: '%s'", test_exec);
+                        log::info("Linking test unit: '%s'", test_exec);
 
-                        auto link_command = fmt::sprintf("%s -o %s%s %s %s %s", 
+                        auto link_command = fmt::sprintf("%s -o %s%s %s %s %s -lstdc++exp", 
                             compiler, target, test_exec, obj_file, lib_paths_flags, lib_flags);
 
-                        cli::trace(link_command.c_str());
+                        log::trace(link_command.c_str());
                         auto result = std::system(link_command.c_str());
                     } else {
-                        cli::info("Unit test is up-to-date: '%s'", test_exec);
+                        log::info("Unit test is up-to-date: '%s'", test_exec);
                     }
                 }
             }

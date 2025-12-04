@@ -290,6 +290,55 @@ namespace ltd
     public:
         /**
          * @brief
+         * Function template for printf.
+         */
+        template<typename... Args>
+        static void printf(const char* format, Args... args)
+        {
+            fmt::osprintf(fmt::print_state::Next, std::cout, format, args...);
+        }
+
+        /**
+         * @brief
+         * Default printf function to print out single object without format
+        */
+        template<typename T>
+        static void printf(T arg)
+        {
+            fmt::osprintf(std::cout, arg);
+        }
+
+        /**
+         * @brief
+         * Function template for printf with carriage return.
+         */
+        template<typename... Args>
+        static void println(const char* format, Args... args)
+        {
+            fmt::osprintf(fmt::print_state::Next, std::cout, format, args...);
+            std::cout << std::endl;
+        }
+
+        /**
+         * @brief
+         * Default println function to print out single object without format
+        */
+        template<typename T>
+        static void println(T arg)
+        {
+            fmt::osprintf(std::cout, arg);
+            std::cout << std::endl;
+        }
+
+        /**
+         * @brief
+         * Flush the output buffer
+         */
+        static void flush();
+
+    public:
+        /**
+         * @brief
          * Set `fmt` print function verbosity level.
          */
         static void set_log_level(int level);
@@ -302,7 +351,7 @@ namespace ltd
         static void vprintln(int level, T arg)
         {
             if(level <= log_level)
-                fmt::println(arg);
+                println(arg);
         }
 
         /**
@@ -313,127 +362,7 @@ namespace ltd
         static void vprintln(int level, const char* format, Args... args)
         {
             if(level <= log_level)
-                fmt::println(format, args...);
-        }
-
-        /**
-         * @brief
-         * Print in verbosity level 'error'
-         */
-        template<typename T>
-        static void fatal(T arg)
-        {
-            vprintln(LOG_FATAL, arg);
-        }
-
-        /**
-         * @brief
-         * Print in verbosity level 'error'
-         */
-        template<typename... Args>
-        static void fatal(const char* format, Args... args)
-        {
-            vprintln(LOG_FATAL, format, args...);
-        }
-
-        /**
-         * @brief
-         * Print in verbosity level 'error'
-         */
-        template<typename T>
-        static void error(T arg)
-        {
-            vprintln(LOG_ERROR, arg);
-        }
-
-        /**
-         * @brief
-         * Print in verbosity level 'error'
-         */
-        template<typename... Args>
-        static void error(const char* format, Args... args)
-        {
-            vprintln(LOG_ERROR, format, args...);
-        }
-
-        /**
-         * @brief
-         * Print in verbosity level 'info'
-         */
-        template<typename T>
-        static void info(T arg)
-        {
-            vprintln(LOG_INFO, arg);
-        }
-
-        /**
-         * @brief
-         * Print in verbosity level 'warn'
-         */
-        template<typename T>
-        static void warn(T arg)
-        {
-            vprintln(LOG_WARN, arg);
-        }
-
-        /**
-         * @brief
-         * Print in verbosity level 'warn'
-         */
-        template<typename... Args>
-        static void warn(const char* format, Args... args)
-        {
-            vprintln(LOG_WARN, format, args...);
-        }
-
-        /**
-         * @brief
-         * Print in verbosity level 'info'
-         */
-        template<typename... Args>
-        static void info(const char* format, Args... args)
-        {
-            vprintln(LOG_INFO, format, args...);
-        }
-
-        /**
-         * @brief
-         * Print in verbosity level 'debug'
-         */
-        template<typename T>
-        static void debug(T arg)
-        {
-            vprintln(LOG_DEBUG, arg);
-        }
-
-        /**
-         * @brief
-         * Print in verbosity level 'debug'
-         */
-        template<typename... Args>
-        static void debug(const char* format, Args... args)
-        {
-            vprintln(LOG_DEBUG, format, args...);
-        }
-
-        /**
-         * @brief
-         * Print in verbosity level 'trace'
-         */
-        template<typename T>
-        static void trace(T arg)
-        {
-            vprintln(LOG_TRACE, arg);
-        }
-
-        /**
-         * @brief
-         * Print in verbosity level 'trace'
-         */
-        template<typename... Args>
-        static void trace(const char* format, Args... args)
-        {
-            vprintln(LOG_TRACE, format, args...);
+                println(format, args...);
         }
     };
 } // namespace ltd

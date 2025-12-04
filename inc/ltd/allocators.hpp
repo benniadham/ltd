@@ -1,67 +1,41 @@
 #ifndef _LTD_INCLUDE_ALLOCATOR_HPP_
 #define _LTD_INCLUDE_ALLOCATOR_HPP_
 
-#include "stddef.hpp"
-#include "err.hpp"
+#include <vector>
+#include "stdltd.hpp"
 
 namespace ltd
 {
     /**
      * @brief
-     * This namespace provides functionalities for memory allocators. The framework
-     * partially inspired by Andrei Alexandrescu talks regarding composables allocators.
-     * 
-     * The default allocator is assigned to heap_allocator. To override this,
-     * one should declare and implement class global_allocator.
-     * 
-     * To have a desired bespoke behaviour of an allocator, one can compose two or
-     * more allocators. To use it globally, declare it as global_allocator or to
-     * use it in a specific class, pass it as a template parameter.
-     * 
-     * The library uses this framework for dynamic object creation and internal allocation
-     * procedures for containers.
+     * System memory pool using malloc/free
      */
-    namespace mem
+    struct system_memory_pool : memory_pool
     {
-        /**
-         * Declaration for global allocator 
-         */
-        class global_allocator;
+        static system_memory_pool *get_instance() noexcept;
 
-        /**
-         * block is used as the container for memory allocation and deallocation.
-         */
-        struct block
-        {
-            void  *ptr;
-            size_t size;
-        };
+        multi_ret<void*,memory_pool*,err> allocate(size_t allocation_size) noexcept override;
 
-        class allocator
-        {
-        public:
-            virtual multi_ret<block,err> allocate(size_t allocation_size) = 0;
-            virtual err deallocate(block allocated_block) = 0;
-            virtual multi_ret<bool,err> owns(block mem_block) = 0;
-        };
-        
-        /**
-         * The standard interface for allocators.
-         */
-        class null_allocator
-        {
-        public:
-            multi_ret<block,err> allocate(size_t allocation_size);
-            multi_ret<block,err> allocate_all();
+        err deallocate(void  *allocated_ptr) noexcept override;
+    };
+    
+    /**
+     * @brief
+     * Global allocator. Orchestrates multiple memory pools.
+     */
+    struct global_allocator : public memory_pool
+    {
+        static global_allocator *get_instance();
 
-            err deallocate(block allocated_block);
-            err deallocate_all();
+        multi_ret<void*,memory_pool*,err> allocate(size_t allocation_size) noexcept override;
 
-            err expand(block& allocated_block, size_t delta);
+        err deallocate(void  *allocated_ptr) noexcept override;
 
-            multi_ret<bool,err> owns(block mem_block);
-        };
-    }  // namespace mem
+    private:
+        std::vector<memory_pool*> local_pools;
+    };
+
+
 }  // namespce ltd
 
 #endif // _LTD_INCLUDE_ALLOCATOR_HPP_

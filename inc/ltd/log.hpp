@@ -1,33 +1,180 @@
 #ifndef _LTD_INCLUDE_LOG_HPP_
 #define _LTD_INCLUDE_LOG_HPP_
 
+#include "stddef.hpp"
+#include "fmt.hpp"
+
+#include "log_level.hpp"
+#include "log_writer.hpp"
+
 namespace ltd
 {
     /**
      * @brief
      * Provides logging functionalities.
-     * 
-     * Log levels:
-     * Trace  - Userd by developer for code execution tracing.
-     * Debug  - Information that is diagnostically helpful to sysadmins.
-     * Info   - Generally useful information to log (service start/stop, configuration assumptions, etc). 
-     *          Info I want to always have available but usually don't care about under normal circumstances. This is my out-of-the-box config level.
-     * Warn   - Anything that can potentially cause application oddities, but for which I am automatically recovering. (Such as switching from a primary to backup server, retrying an operation, missing secondary data, etc.)
-     * Error  - Any error which is fatal to the operation, but not the service or application (can't open a required file, missing data, etc.). These errors will force user (administrator, or direct user) intervention. These are usually reserved (in my apps) for incorrect connection strings, missing services, etc.
-     * Fatal  - Any error that is forcing a shutdown of the service or application to prevent data loss (or further data loss). I reserve these only for the most heinous errors and situations where there is guaranteed to have been data corruption or loss.
-     */
-    namespace log
+     */ 
+    class log
     {
-        enum Filter
+    public:
+        static log_writer writer;
+        
+    private:
+        static LOG_LEVEL log_level;
+
+    public:
+        static void set_filter_level(LOG_LEVEL level);
+        static LOG_LEVEL get_filter_level();
+
+        static void set_verbosity(int verbosity);       // Set log level using verbosity level 0-4
+
+        static void init_console_logger();              // Initialize console logger
+
+        /**
+         * @brief
+         * Print line using verbosity level.
+         */
+        template<typename T>
+        static void vprintln(LOG_LEVEL level, T arg)
         {
-            FATAL,
-            ERROR,
-            WARN,
-            INFO,
-            DEBUG,
-            TRACE
-        };
-    } // namespace log
+            if(level <= log_level) {
+                auto formatted_message = fmt::sprintf(arg);
+                writer.write(level, formatted_message);
+            }
+        }
+
+        /**
+         * @brief
+         * Print line using verbosity level.
+         */
+        template<typename... Args>
+        static void vprintln(LOG_LEVEL level, const char* format, Args... args)
+        {
+            if(level <= log_level) {
+                auto formatted_message = fmt::sprintf(format, args...);
+                writer.write(level, formatted_message);
+            }                
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'error'
+         */
+        template<typename T>
+        static void fatal(T arg)
+        {
+            vprintln(LOG_LEVEL::FATAL, arg);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'error'
+         */
+        template<typename... Args>
+        static void fatal(const char* format, Args... args)
+        {
+            vprintln(LOG_LEVEL::FATAL, format, args...);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'error'
+         */
+        template<typename T>
+        static void error(T arg)
+        {
+            vprintln(LOG_LEVEL::ERROR, arg);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'error'
+         */
+        template<typename... Args>
+        static void error(const char* format, Args... args)
+        {
+            vprintln(LOG_LEVEL::ERROR, format, args...);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'info'
+         */
+        template<typename T>
+        static void info(T arg)
+        {
+            vprintln(LOG_LEVEL::INFO, arg);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'info'
+         */
+        template<typename... Args>
+        static void info(const char* format, Args... args)
+        {
+            vprintln(LOG_LEVEL::INFO, format, args...);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'warn'
+         */
+        template<typename T>
+        static void warn(T arg)
+        {
+            vprintln(LOG_LEVEL::WARN, arg);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'warn'
+         */
+        template<typename... Args>
+        static void warn(const char* format, Args... args)
+        {
+            vprintln(LOG_LEVEL::WARN, format, args...);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'debug'
+         */
+        template<typename T>
+        static void debug(T arg)
+        {
+            vprintln(LOG_LEVEL::DEBUG, arg);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'debug'
+         */
+        template<typename... Args>
+        static void debug(const char* format, Args... args)
+        {
+            vprintln(LOG_LEVEL::DEBUG, format, args...);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'trace'
+         */
+        template<typename T>
+        static void trace(T arg)
+        {
+            vprintln(LOG_LEVEL::TRACE, arg);
+        }
+
+        /**
+         * @brief
+         * Print in verbosity level 'trace'
+         */
+        template<typename... Args>
+        static void trace(const char* format, Args... args)
+        {
+            vprintln(LOG_LEVEL::TRACE, format, args...);
+        }
+    };
 } // namespace ltd
 
 #endif // _LTD_INCLUDE_LOG_HPP_

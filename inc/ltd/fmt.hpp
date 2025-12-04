@@ -134,48 +134,6 @@ namespace ltd
 
         /**
          * @brief
-         * Function template for printf.
-         */
-        template<typename... Args>
-        void printf(const char* format, Args... args)
-        {
-            osprintf(print_state::Next, std::cout, format, args...);
-        }
-
-        /**
-         * @brief
-         * Default printf function to print out single object without format
-        */
-        template<typename T>
-        void printf(T arg)
-        {
-            osprintf(std::cout, arg);
-        }
-
-        /**
-         * @brief
-         * Function template for printf with carriage return.
-         */
-        template<typename... Args>
-        void println(const char* format, Args... args)
-        {
-            osprintf(print_state::Next, std::cout, format, args...);
-            std::cout << std::endl;
-        }
-
-        /**
-         * @brief
-         * Default println function to print out single object without format
-        */
-        template<typename T>
-        void println(T arg)
-        {
-            osprintf(std::cout, arg);
-            std::cout << std::endl;
-        }
-
-        /**
-         * @brief
          * Function template for sprintf.
          */
         template<typename... Args>

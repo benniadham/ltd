@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "../inc/ltd/cli.hpp"
+#include "../inc/ltd/log.hpp"
 
 #include "sdk.hpp"
 #include "compiler.hpp"
@@ -182,19 +183,19 @@ namespace ltd
         {
             string build_mode = debug ? "/debug" : "/release";
 
-            cli::info("Building: %s", sub_dir);
-            cli::info("Build mode: %s", debug ? "DEBUG" : "RELEASE");
+            log::info("Building: %s", sub_dir);
+            log::info("Build mode: %s", debug ? "DEBUG" : "RELEASE");
 
             // Get source file path
             string src_path = sdk::get_active_project_path() + sub_dir;
-            cli::debug("Source path: %s", src_path);
+            log::debug("Source path: %s", src_path);
 
             // Determine object file path
             string dst_path = sdk::get_builds_path();
             if (fs::exists(dst_path) == false) {
                 fs::create_directory(dst_path);
             }
-            cli::debug("Build path: %s", dst_path);
+            log::debug("Build path: %s", dst_path);
             
             dst_path += "/" + sdk::get_active_project();
             if (fs::exists(dst_path) == false) {
@@ -202,13 +203,13 @@ namespace ltd
             }
 
             string build_dir = dst_path + build_mode; 
-            cli::debug("Build path: %s", build_dir);
+            log::debug("Build path: %s", build_dir);
             if (fs::exists(build_dir) == false) {
                 fs::create_directory(build_dir);
             }
 
             string obj_path = build_dir + sub_dir;
-            cli::debug("Build object path: %s", obj_path);
+            log::debug("Build object path: %s", obj_path);
             if (fs::exists(obj_path) == false) {
                 fs::create_directory(obj_path);
             }
@@ -230,7 +231,7 @@ namespace ltd
 
             if (sub_dir.find("/lib")==0) {
                 if (files_compiled == 0) {
-                    cli::info("Binary is up-to-date...");
+                    log::info("Binary is up-to-date...");
                     return;
                 }
 
@@ -238,7 +239,7 @@ namespace ltd
                 cc.build_lib(obj_path, target);
             } else if (sub_dir.find("/app")==0) {
                 if (files_compiled == 0) {
-                    cli::info("Binary is up-to-date...");
+                    log::info("Binary is up-to-date...");
                     return;
                 }
                 
