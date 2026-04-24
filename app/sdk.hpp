@@ -113,6 +113,18 @@ namespace ltd
          * Clean all binaries from the build directory.
          */
         void clean_project(bool debug);
+
+        /**
+         * @brief
+         * Get header youngest time stamp.
+         */
+        fs::file_time_type get_headers_write_time();
+
+        /**
+         * @brief
+         * Get the youngest write time under a directory.
+         */
+        fs::file_time_type get_youngest_write_time(const string& path);
     }
 }
 

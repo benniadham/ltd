@@ -18,7 +18,7 @@ namespace ltd
 
         err deallocate(void  *allocated_ptr) noexcept override;
     };
-    
+
     /**
      * @brief
      * Global allocator. Orchestrates multiple memory pools.

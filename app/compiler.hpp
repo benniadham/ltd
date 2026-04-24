@@ -3,6 +3,10 @@
 
 #include "../inc/ltd/stddef.hpp"
 
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
 namespace ltd
 {
     namespace sdk
@@ -11,7 +15,7 @@ namespace ltd
         {
         private:
             string compiler = "g++";
-            string standard = "c++23";
+            string standard = "c++17";
             bool debug = false;
 
             string_list inc_paths;
@@ -44,7 +48,7 @@ namespace ltd
              * 
              * @returns Number of files compiled.
              */
-            int compile_files(const string& src_dir, const string& obj_dir) const;
+            int compile_files(const string& src_dir, const string& obj_dir, const fs::file_time_type& entry_time) const;
 
             /**
              * @brief
@@ -62,13 +66,13 @@ namespace ltd
              * @brief
              * Link .o files into an executable
              */
-            void build_app(const string& obj_dir, const string& target) const;
+            void link_app(const string& obj_dir, const string& target) const;
 
             /**
              * @brief
              * Link .o files into test executables
              */
-            void build_tests(const string& obj_dir, const string& target) const;
+            void link_tests(const string& obj_dir, const string& target) const;
         };
     } // namespace sdk
 } // namespace ltd

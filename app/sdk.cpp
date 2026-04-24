@@ -182,6 +182,7 @@ namespace ltd
         void build_dir(const string& name, const string& sub_dir, bool debug, string_list& imports)
         {
             string build_mode = debug ? "/debug" : "/release";
+            auto header_time = get_headers_write_time(); 
 
             log::info("Building: %s", sub_dir);
             log::info("Build mode: %s", debug ? "DEBUG" : "RELEASE");
@@ -227,7 +228,7 @@ namespace ltd
                 cc.add_library(import);
             }
 
-            int files_compiled = cc.compile_files(src_path, obj_path);
+            int files_compiled = cc.compile_files(src_path, obj_path, header_time);
 
             if (sub_dir.find("/lib")==0) {
                 if (files_compiled == 0) {
@@ -246,11 +247,11 @@ namespace ltd
                 string target = build_dir + "/target/" + name;
                 cc.add_lib_path(build_dir + "/target/");
                 cc.add_library(name);
-                cc.build_app(obj_path, target);
+                cc.link_app(obj_path, target);
             } else {
                 cc.add_lib_path(build_dir + "/target/");
                 cc.add_library(name);
-                cc.build_tests(obj_path, build_dir + "/tests/");
+                cc.link_tests(obj_path, build_dir + "/tests/");
             }
         }
 
@@ -295,6 +296,32 @@ namespace ltd
             string path = get_active_build_path(debug);
             fs::path dir_path(path);
             clear_dir(dir_path);
+        }
+
+        fs::file_time_type get_headers_write_time()
+        {
+            string headers_path = get_active_project_path() + "/inc";
+            return get_youngest_write_time(headers_path);
+        }
+
+        fs::file_time_type get_youngest_write_time(const string& path)
+        {
+            fs::file_time_type youngest_time;
+
+            for(const auto& dir_entry : fs::recursive_directory_iterator(path))  {
+                fs::file_time_type entry_time;
+
+                if (dir_entry.is_directory())
+                    entry_time = get_youngest_write_time(dir_entry.path().string());
+                else    
+                    entry_time = dir_entry.last_write_time();
+
+                if (youngest_time == fs::file_time_type{} || entry_time > youngest_time) {
+                    youngest_time = entry_time;
+                }
+            }
+
+            return youngest_time;
         }
     }
 }

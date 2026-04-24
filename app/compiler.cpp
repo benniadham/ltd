@@ -81,10 +81,12 @@ namespace ltd
             auto result = std::system(command.c_str());
         }
 
-        int Cpp::compile_files(const string& src_dir, const string& obj_dir) const
+        int Cpp::compile_files(const string& src_dir, const string& obj_dir, const fs::file_time_type& entry_time) const
         {
             Entries entries;
             int counter = 0;
+
+            log::trace("Entering '%s'", src_dir);
 
             // Collecting dirty source files for compilation
             for(const auto& dir_entry : fs::directory_iterator(src_dir)) 
@@ -92,29 +94,41 @@ namespace ltd
                 auto ext = dir_entry.path().extension();
 
                 if (ext == ".cpp" || ext == ".cc" || ext == ".cxx") {
-                    string src_file = dir_entry.path().c_str();
+                    string src_file_path = dir_entry.path().c_str();
+                    string src_file = dir_entry.path().filename().c_str();
 
                     string obj_file = dir_entry.path().filename().replace_extension(".o");
                     
-                    obj_file = obj_dir + "/" + obj_file.c_str();
+                    string obj_file_path = obj_dir + "/" + obj_file.c_str();
 
                     bool need_compile = true;
-                    if(std::filesystem::exists(obj_file)) {
-                        auto srctime = std::filesystem::last_write_time(src_file);
-                        auto objtime = std::filesystem::last_write_time(obj_file);
-
-                        need_compile = srctime > objtime;
+                    if(std::filesystem::exists(obj_file_path)) {
+                        auto srctime = std::filesystem::last_write_time(src_file_path);
+                        auto objtime = std::filesystem::last_write_time(obj_file_path);
+                        
+                        if(srctime > objtime) {
+                            log::trace("'%s' is edited...", src_file);
+                            need_compile = true;
+                        } else if (objtime < entry_time) {
+                            need_compile = true;
+                            log::trace("'%s' header files is updated...", src_file);
+                        } else {
+                            need_compile = false;
+                            log::trace("'%s' is up-to-date...", obj_file);
+                        }
+                    } else {
+                        log::trace("'%s' does not exist...", obj_file);
                     }
                     
                     if(need_compile) {
-                        Entry entry = std::make_pair(src_file, obj_file);
+                        Entry entry = std::make_pair(src_file_path, obj_file_path);
                         entries.push_back(entry);
-                    }
+                    } 
                 }
             }
 
             if(entries.size() == 0)
-                log::warn("No files found for compilation...");
+                log::info("No files found for compilation...");
  
             for(int i=0; i<entries.size(); i++) {
                 fs::path file = entries[i].first;
@@ -124,6 +138,7 @@ namespace ltd
                 counter++;
             }
 
+            log::trace("Exiting '%s'", src_dir);
             return counter;
         }
 
@@ -149,7 +164,7 @@ namespace ltd
             auto result = std::system(link_command.c_str());
         }
 
-        void Cpp::build_app(const string& obj_dir, const string& target) const
+        void Cpp::link_app(const string& obj_dir, const string& target) const
         {
             string obj_files;
             
@@ -177,14 +192,14 @@ namespace ltd
             fs::path target_path = target;
             log::info("Linking app: %s", target_path.filename());
 
-            auto link_command = fmt::sprintf("%s -o %s %s %s %s -lstdc++exp", 
+            auto link_command = fmt::sprintf("%s -o %s %s %s %s", 
                                 compiler, target, obj_files, lib_paths_flags, lib_flags);
 
             log::trace(link_command.c_str());
             auto result = std::system(link_command.c_str());
         }
 
-        void Cpp::build_tests(const string& obj_dir, const string& target) const
+        void Cpp::link_tests(const string& obj_dir, const string& target) const
         {
             string lib_paths_flags;
             for(auto lib_path : lib_paths) 

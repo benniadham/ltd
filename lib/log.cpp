@@ -20,7 +20,7 @@ namespace ltd
     LOG_LEVEL log::get_filter_level()
     {
         return log_level;
-    }
+    } 
 
     void log::set_verbosity(int verbosity)
     {

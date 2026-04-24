@@ -111,7 +111,7 @@ void cmd_pwd()
     cli::println(sdk::get_active_project());
 }
 
-void cmd_build(bool debug, string_list& imports)
+void cmd_build(bool debug, string_list& imports, const string& build_target)
 {
     auto active_project = sdk::get_active_project();
     
@@ -121,25 +121,37 @@ void cmd_build(bool debug, string_list& imports)
         return;
     }
 
-    // Iterate project dir to get build targets
-    string_list dirs;
-    sdk::list_project_dir(dirs);
+    if (build_target.length()==0) {
+        // Iterate project dir to get build targets
+        string_list dirs;
+        sdk::list_project_dir(dirs);
 
-    for (auto dir : dirs) {
-        if (dir == "app") {
-            sdk::build_dir(active_project, "/app", debug, imports);
-        } else if (dir == "lib") {
-            sdk::build_dir(active_project, "/lib", debug, imports);
-        } else if (dir == "tests") {
-            sdk::build_dir(active_project, "/tests", debug, imports);
-        } else if (dir == "apps") {
-            log::fatal("Needs to implement apps");
-            exit(-1);
-        } else if (dir == "libs") {
-            log::fatal("Needs to implement libs");
-            exit(-1);
-        }
+        for (auto dir : dirs) {
+            if (dir == "app") {
+                sdk::build_dir(active_project, "/app", debug, imports);
+            } else if (dir == "lib") {
+                sdk::build_dir(active_project, "/lib", debug, imports);
+            } else if (dir == "tests") {
+                sdk::build_dir(active_project, "/tests", debug, imports);
+            } else if (dir == "apps") {
+                log::fatal("Needs to implement apps");
+                exit(-1);
+            } else if (dir == "libs") {
+                log::fatal("Needs to implement libs");
+                exit(-1);
+            }
+        } 
+    } else if (build_target == "tests") {
+        sdk::build_dir(active_project, "/tests", debug, imports);
+    } else if (build_target == "lib") {
+        sdk::build_dir(active_project, "/lib", debug, imports);
+    } else if (build_target == "app") {
+        sdk::build_dir(active_project, "/app", debug, imports);
+    } else {
+        log::fatal("Unrecognized build target: '%s'", build_target);
+        exit(-1);
     }
+    
 }
 
 void cmd_clean(bool debug) 
@@ -170,6 +182,7 @@ auto main(int argc, char *argv[]) -> int {
     string cppstd;
     string run;
     string run_args;
+    string build_target;
     
     string_list imports;
 
@@ -182,6 +195,8 @@ auto main(int argc, char *argv[]) -> int {
 
     args.bind_param(run, "run", "Specify executable to run after build");
     args.bind_param(run_args, "args", "Specify arguments for running executable");
+
+    args.bind_param(build_target, "target", "Build target 'tests', 'app' or 'lib'.\n\t\t i.e 'ltd build --target=tests'");
 
     args.add_command("ls",  sdk::CMD_LS, "List all projects in the workspace");
     args.add_command("pwd", sdk::CMD_PWD, "Show currect active project");
@@ -214,7 +229,7 @@ auto main(int argc, char *argv[]) -> int {
         cmd_cd(args);
         break;
     case sdk::CMD_BUILD:
-        cmd_build(debug_mode, imports);
+        cmd_build(debug_mode, imports, build_target);;
 
         // Run the built executable if specified
         if (run.length() > 0) {
