@@ -24,7 +24,7 @@ namespace ltd
 
     void log::set_verbosity(int verbosity)
     {
-        log_level = (LOG_LEVEL) ((int)LOG_LEVEL::WARN + verbosity);
+        log_level = (LOG_LEVEL) ((int)LOG_LEVEL::INFO + verbosity);
     }
 
     void log::init_console_logger()

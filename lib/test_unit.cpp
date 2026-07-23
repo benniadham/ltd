@@ -62,7 +62,7 @@ namespace ltd
             }
 
         } else if (test_id >= 0) {
-            if (test_id >= 0 && test_id < test_cases.size()) {
+            if (test_id >= 0 && test_id < (int)test_cases.size()) {
                 test_cases[test_id]();
                 if (failed == false)
                     cli::println("-ok-");

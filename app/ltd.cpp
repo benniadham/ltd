@@ -13,6 +13,14 @@ using namespace ltd;
 
 void cmd_deploy(int global)
 {
+    auto active_project = sdk::get_active_project();
+    
+    // We need to have active project set
+    if (active_project.length() == 0) {
+        log::error("Active project is not set. To set the active project use: ltd cd project-name");
+        return;
+    }
+
     sdk::deploy_to_module_path();
 }
 
@@ -108,6 +116,14 @@ void cmd_get(cli& args)
 
 void cmd_pwd()
 {
+    auto active_project = sdk::get_active_project();
+    
+    // We need to have active project set
+    if (active_project.length() == 0) {
+        log::error("Active project is not set. To set the active project use: ltd cd project-name");
+        return;
+    }
+
     cli::println(sdk::get_active_project());
 }
 
@@ -117,14 +133,16 @@ void cmd_build(bool debug, string_list& imports, const string& build_target)
     
     // We need to have active project set
     if (active_project.length() == 0) {
-        log::error("Active project is not set.");
+        log::error("Active project is not set. To set the active project use: ltd cd project-name");
         return;
     }
 
+    // If build target is not defined, then iterate all folders and build them
     if (build_target.length()==0) {
         // Iterate project dir to get build targets
         string_list dirs;
         sdk::list_project_dir(dirs);
+        string_list local_libs;
 
         for (auto dir : dirs) {
             if (dir == "app") {
@@ -156,6 +174,14 @@ void cmd_build(bool debug, string_list& imports, const string& build_target)
 
 void cmd_clean(bool debug) 
 {
+    auto active_project = sdk::get_active_project();
+    
+    // We need to have active project set
+    if (active_project.length() == 0) {
+        log::error("Active project is not set. To set the active project use: ltd cd project-name");
+        return;
+    }
+    
     sdk::clean_project(debug);
 }
 
@@ -229,7 +255,8 @@ auto main(int argc, char *argv[]) -> int {
         cmd_cd(args);
         break;
     case sdk::CMD_BUILD:
-        cmd_build(debug_mode, imports, build_target);;
+        // TODO: quit if build command failed
+        cmd_build(debug_mode, imports, build_target);
 
         // Run the built executable if specified
         if (run.length() > 0) {
@@ -248,6 +275,14 @@ auto main(int argc, char *argv[]) -> int {
         break;
     case sdk::CMD_TEST:
         {
+            auto active_project = sdk::get_active_project();
+    
+            // We need to have active project set
+            if (active_project.length() == 0) {
+                log::error("Active project is not set. To set the active project use: ltd cd project-name");
+                return -1;
+            }
+
             auto mode = debug_mode ? "/debug/" : "/release/";
             auto path = sdk::get_homepath() + "/builds/" + sdk::get_active_project() + mode + "tests/";
 

@@ -238,8 +238,7 @@ namespace ltd
                 } else {
                     parse_flag(arg);
                 }
-            } else
-                return err::invalid_argument;
+            }
         } // for
 
         return err::no_error;
@@ -329,7 +328,7 @@ namespace ltd
         }
     }
 
-    multi_ret<string,err> cli::at(int index) const
+    multi_ret<string,err> cli::at(size_t index) const
     {
         if (index >= 0 && index < args.size()) {
             return {args.at(index), err::no_error};
@@ -343,10 +342,8 @@ namespace ltd
         std::cout.flush();
     }
 
-    int cli::log_level=cli::LOG_INFO;
-
-    void cli::set_log_level(int level)
+    int cli::size() const
     {
-        log_level = level;
+        return args.size();
     }
 }

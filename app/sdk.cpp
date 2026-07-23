@@ -47,7 +47,7 @@ namespace ltd
 
                 return project; 
             }
-
+            
             return "";
         }
 
@@ -219,6 +219,8 @@ namespace ltd
                 fs::create_directories(build_dir + "/target/");
             }
 
+            log::trace("Start building");
+
             Cpp cc;
 
             // Add include imports
@@ -243,10 +245,14 @@ namespace ltd
                     log::info("Binary is up-to-date...");
                     return;
                 }
+                                
+                // Only link library if we have libraries to link with
+                if(fs::exists(sdk::get_active_project_path() + "/lib")) {
+                    cc.add_lib_path(build_dir + "/target/");
+                    cc.add_library(name);
+                }
                 
                 string target = build_dir + "/target/" + name;
-                cc.add_lib_path(build_dir + "/target/");
-                cc.add_library(name);
                 cc.link_app(obj_path, target);
             } else {
                 cc.add_lib_path(build_dir + "/target/");
@@ -301,6 +307,9 @@ namespace ltd
         fs::file_time_type get_headers_write_time()
         {
             string headers_path = get_active_project_path() + "/inc";
+            if(!fs::exists(headers_path))
+                return fs::file_time_type{};
+
             return get_youngest_write_time(headers_path);
         }
 

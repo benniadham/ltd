@@ -95,7 +95,7 @@ namespace ltd
         private:
             string name;                // The command name.
             string description;         // Text description for help.
-            int    value;               // Integer representation value for the command.
+            int    value = 0;           // Integer representation value for the command.
 
         public:
             // ctors
@@ -257,7 +257,15 @@ namespace ltd
          * @return string The argument.
          * @return err The error status fromt the function execution.
          */
-        multi_ret<string,err> at(int index) const;         
+        multi_ret<string,err> at(size_t index) const;      
+        
+        /**
+         * @brief
+         * Get the number of arguments.
+         * 
+         * @return int The number of arguments.
+         */
+        int size() const; 
         
     private:
         /**
@@ -268,24 +276,6 @@ namespace ltd
          * @return int The integer value associated with the command.
          */
         int map_command(const string& name) const;
-
-    public:
-        /**
-         * @brief
-         * Log level for `fmt` print functions.
-         */
-        enum log_level
-        {
-            LOG_FATAL,
-            LOG_ERROR,
-            LOG_WARN,
-            LOG_INFO,
-            LOG_DEBUG,
-            LOG_TRACE,
-        };
-
-    private:
-        static int log_level;
 
     public:
         /**
@@ -335,35 +325,6 @@ namespace ltd
          * Flush the output buffer
          */
         static void flush();
-
-    public:
-        /**
-         * @brief
-         * Set `fmt` print function verbosity level.
-         */
-        static void set_log_level(int level);
-
-        /**
-         * @brief
-         * Print line using verbosity level.
-         */
-        template<typename T>
-        static void vprintln(int level, T arg)
-        {
-            if(level <= log_level)
-                println(arg);
-        }
-
-        /**
-         * @brief
-         * Print line using verbosity level.
-         */
-        template<typename... Args>
-        static void vprintln(int level, const char* format, Args... args)
-        {
-            if(level <= log_level)
-                println(format, args...);
-        }
     };
 } // namespace ltd
 #endif // _LTD_INCLUDE_CLI_HPP_

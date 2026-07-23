@@ -2,7 +2,7 @@
 #define _LTD_INCLUDE_ERR_HPP_
 
 namespace ltd
-{
+{ 
     enum class err
     {
         no_error, 
