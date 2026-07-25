@@ -104,7 +104,6 @@ namespace ltd
             return counter.fetch_sub(1, std::memory_order_acq_rel) - 1;
         }
 
-
         /**
          * @brief
          * Checks is the refernce counter is still unique.
@@ -414,13 +413,20 @@ namespace ltd
             if(is_referenced()) 
             {
                 rc = std::get<ref_counter*>(holder);
+                
                 rc->increment();                
             } 
             else 
             {
                 auto pool = std::get<memory_pool*>(holder);
                 rc = rc_factory::create_ref_counter(pool);
+                // TODO: Handle the case when rc is nullptr due to allocation failure. 
+                // This is a critical issue that needs to be addressed to ensure the 
+                // robustness of the system. We should check if rc is nullptr and 
+                // return an appropriate error code or throw an exception to indicate 
+                // the failure of reference counter creation.
 
+                // Increment the reference count for the newly created reference counter                
                 rc->increment();                
                 holder = rc;
             }

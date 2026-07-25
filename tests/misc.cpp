@@ -3,7 +3,7 @@
 #include "../inc/ltd/cli.hpp"
 #include "../inc/ltd/stdltd.hpp"
 
-#include <stacktrace>
+// #include <stacktrace>
 
 #include <variant>
 #include <memory>
@@ -17,11 +17,11 @@ class d
 
 void stack_trace_example()
 {
-    std::stacktrace st = std::stacktrace::current();
+    // std::stacktrace st = std::stacktrace::current();
 
-    for(auto ste : st) {
-        cli::println("Frame: %d, %s", ste.source_line(), ste.description().c_str());
-    }
+    // for(auto ste : st) {
+    //     cli::println("Frame: %d, %s", ste.source_line(), ste.description().c_str());
+    // }
 }
 
 auto main(int argc, char** argv) -> int

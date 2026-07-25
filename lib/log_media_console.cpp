@@ -5,7 +5,7 @@ namespace ltd
 {
     const char* log_media_console::log_level_colors[] = 
     {
-        "\033[1;31m", "\033[0;31m", "\033[0;33m", "\033[0;92m", "\033[0;94m", "\033[0;95m"
+        "\033[1;31m", "\033[0;31m", "\033[0;33m", "\033[0,97m", "\033[93m", "\033[92m"
     };
 
     const char* log_media_console::log_color_reset = "\033[0m";

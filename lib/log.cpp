@@ -20,11 +20,11 @@ namespace ltd
     LOG_LEVEL log::get_filter_level()
     {
         return log_level;
-    }
+    } 
 
     void log::set_verbosity(int verbosity)
     {
-        log_level = (LOG_LEVEL) ((int)LOG_LEVEL::WARN + verbosity);
+        log_level = (LOG_LEVEL) ((int)LOG_LEVEL::INFO + verbosity);
     }
 
     void log::init_console_logger()
