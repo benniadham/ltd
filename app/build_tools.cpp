@@ -64,6 +64,15 @@ namespace ltd
         for (const string& import : imports) {
             auto module_dir = the_home.get_module_dir(import);
             lib_dirs += string(" -L") + module_dir;
+
+            string_list import_libs;
+            if (the_home.get_libs(module_dir, import_libs) == false) {
+                log::warn("Failed getting libraries from import module directory: %s", module_dir);
+                continue;
+            }
+            for (const auto& lib : import_libs) {
+                libs += string(" -l") + lib;
+            }
         }
 
         // Additional library paths
@@ -375,7 +384,7 @@ namespace ltd
                         compiled = true;
                         log::info(task.message);
                         log::trace("  Source: %s\n  Target: %s", task.source, task.target);
-                        auto command = fmt::sprintf("%s %s -c %s -o %s", cpp, cppflags, task.source, task.target);
+                        auto command = fmt::sprintf("%s %s -c %s -o %s %s", cpp, cppflags, task.source, task.target, inc_dirs);
                         log::trace(command);
                         auto result = std::system(command.c_str());
                         success = (result == 0);
