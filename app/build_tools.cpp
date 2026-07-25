@@ -49,17 +49,6 @@ namespace ltd
         auto project_build_dir = the_home.get_active_build_dir(debug);
         lib_dirs = string("-L") + project_build_dir;
 
-        // lets list all the libraries in the active builds directory and add them to the libs list
-        string_list build_libs;
-        if (the_home.get_libs(project_build_dir, build_libs) == false) {
-            log::fatal("Failed getting libraries from active builds directory: %s", project_build_dir);
-            return false;
-        }
-
-        for (const auto& lib : build_libs) {
-            libs += string(" -l") + lib;
-        }
-
         // Add import library paths
         for (const string& import : imports) {
             auto module_dir = the_home.get_module_dir(import);
@@ -116,7 +105,7 @@ namespace ltd
         return true;
     }
 
-    bool build_tools::build_libs()  const
+    bool build_tools::build_libs()  
     {
         log::trace("Entering build_libs()");
 
@@ -130,7 +119,12 @@ namespace ltd
         // if it is call the build_lib() function using the "/lib" sub_dir
         if (fs::exists(project_dir + "/lib")) {
             log::trace("Found '/lib' directory, building library");
-            return build_lib("lib", project_name);
+            if (build_lib("lib", project_name) == false) {
+                log::trace("Failed to build library for '/lib'");
+                return false;
+            } else {
+                log::trace("Successfully built library for '/lib'");                
+            }
         }
 
         // Check if the "libs" directory exist
@@ -153,7 +147,7 @@ namespace ltd
         return true;
     }
 
-    bool build_tools::build_lib(const string& sub_dir, const string& name)  const
+    bool build_tools::build_lib(const string& sub_dir, const string& name)  
     {
         // create plan
         build_plan plan;
@@ -165,7 +159,9 @@ namespace ltd
             return false;
 
         // run the plan
-        run_build_plan(plan);
+        if(run_build_plan(plan) == false)
+            return false;
+        libs += (string(" -l") + name);
         return true;
     }
 
@@ -191,6 +187,16 @@ namespace ltd
         log::trace("Entering build_apps()");
 
         auto project_dir = the_home.get_active_project_dir();
+        auto project_name = the_home.get_active_project_name();
+
+        log::trace("Under '%s'", project_dir);
+        log::trace("Check if '/app' exist");
+        // Check if the "lib" directory exist
+        // if it is call the build_lib() function using the "/lib" sub_dir
+        if (fs::exists(project_dir + "/app")) {
+            log::trace("Found '/app' directory, building application");
+            return build_app("app", project_name);
+        }
 
         log::trace("Under '%s'", project_dir);
         log::trace("Check if '/apps' exist");
@@ -218,10 +224,12 @@ namespace ltd
         // create plan
         build_plan plan;
         plan_dir_compilation(plan, "tests");
-        plan_tests_linking(plan);
-        
-        // run the plan
         run_build_plan(plan);
+
+        plan.clear();
+        plan_tests_linking(plan);
+        run_build_plan(plan);
+
         return true;
     }
 
@@ -302,6 +310,7 @@ namespace ltd
             return false;
         }
 
+        bool warn = true;
         for (const auto& entry : fs::directory_iterator(dir)) {
             if (entry.is_regular_file() && entry.path().extension() == ".o") {
                 log::trace("Found object file for tests: %s", entry.path().filename().string());
@@ -310,10 +319,14 @@ namespace ltd
                 task.type = LINK;
                 task.source = entry.path().c_str();
                 string file_name = entry.path().filename().replace_extension("").c_str();
-                task.target = the_home.get_active_build_dir(debug) + "/" + file_name;
+                task.target = the_home.get_active_build_dir(debug) + "/tests/" + file_name;
                 task.message = "Linking tests binary " + file_name + "...";
                 plan.push_back(task);
+                warn = false; 
             }
+        }
+        if (warn) {
+            log::warn("No object files found for tests in: %s", dir);
         }
         return true;
     }

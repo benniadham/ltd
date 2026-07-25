@@ -96,7 +96,9 @@ auto main(int argc, char* argv[]) -> int
 
             if (cmd_info.build_target.empty() || cmd_info.build_target == "all") 
             {
-                log::fatal("Building all targets is not yet implemented");
+                tools.build_libs();
+                tools.build_apps();
+                tools.build_tests();
             } 
             else if (cmd_info.build_target == "lib") 
             {
@@ -187,17 +189,49 @@ auto main(int argc, char* argv[]) -> int
     case Command::test:
         log::info("Command: test");
         {
-            auto test_file = the_home.get_active_build_dir(cmd_info.debug_mode > 0) + "/" + cmd_info.build_target;
-            if(!fs::exists(test_file)) {
-                log::fatal("Test file does not exist: %s", test_file);
-                return -1;
-            }
-            log::info("Running test: %s", test_file);
-            auto result = std::system((test_file + " " + cmd_info.run_args).c_str());
-            if(result != 0) {
-                log::fatal("Test failed with exit code: %d", result);
-                return -1;  
-            }
+            if(cmd_info.build_target.empty() || cmd_info.build_target == "tests" || cmd_info.build_target == "all") {
+                auto active_project = the_home.get_active_project_name();
+                if(active_project.empty()) {
+                    log::fatal("No active project is set. Please set an active project using the 'cd' command.");
+                    return -1;  
+                }
+                auto test_dir = the_home.get_active_build_dir(cmd_info.debug_mode > 0) + "/tests";
+                if(!fs::exists(test_dir)) {
+                    log::fatal("Test directory does not exist: %s", test_dir);
+                    return -1;
+                }
+                for(const auto& dir_entry : fs::directory_iterator(test_dir)) {
+                    if (dir_entry.is_directory())
+                        continue;
+                    if (dir_entry.path().extension() == ".o")
+                        continue;
+                    
+                    auto filename = dir_entry.path().filename().replace_extension("");
+                    cli::printf("Running unit test %-13s ........................ ", filename);
+                    cli::flush();
+
+                    auto exec = dir_entry.path();
+                    exec += " -a";
+                    auto res = std::system(exec.c_str());
+                    if (res != 0) {
+                        cli::println("FAILED (exit code: %d)", res);
+                    }
+                }
+            } 
+            else
+            {
+                auto test_file = the_home.get_active_build_dir(cmd_info.debug_mode > 0) + "/tests/" + cmd_info.build_target;
+                if(!fs::exists(test_file)) {
+                    log::fatal("Test file does not exist: %s", test_file);
+                    return -1;
+                }
+                log::info("Running test: %s", test_file);
+                auto result = std::system((test_file + " " + cmd_info.run_args).c_str());
+                if(result != 0) {
+                    log::fatal("Test failed with exit code: %d", result);
+                    return -1;  
+                }
+            }            
         }
         break;
     case Command::deploy:

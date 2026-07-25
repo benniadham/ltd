@@ -46,8 +46,8 @@ namespace ltd
 
         bool configure(const command_info& info);
 
-        bool build_libs() const;
-        bool build_lib(const string& sub_dir, const string& name) const;
+        bool build_libs();
+        bool build_lib(const string& sub_dir, const string& name);
         bool build_apps() const;
         bool build_app(const string& sub_dir, const string& name) const; 
         bool build_tests() const;
