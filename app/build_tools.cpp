@@ -35,7 +35,7 @@ namespace ltd
         }
 
         // configure libs and lib path
-        if (configure_lib_dir(info.imports, info.libs) == false) {
+        if (configure_lib_dir(info.imports, info.libs, info.lib_dirs) == false) {
             log::fatal("Failed configuring lib paths");
             return false;
         }
@@ -43,7 +43,7 @@ namespace ltd
         return true;
     }
 
-    bool build_tools::configure_lib_dir(const string_list& imports, const string_list& libraries) 
+    bool build_tools::configure_lib_dir(const string_list& imports, const string_list& libraries, const string_list& libdirs)
     {
         // Add the active builds directory to the library search path
         auto project_build_dir = the_home.get_active_build_dir(debug);
@@ -76,10 +76,18 @@ namespace ltd
         }
 
         // Additional library paths
-        for (const string& lib_dir : libraries) {
+        for (const string& lib_dir : libdirs) {
+            log::trace("Adding additional library directory: %s", lib_dir);
             lib_dirs += string(" -L") + lib_dir;
         }
 
+        for (const string& lib : libraries) {
+            log::trace("Adding additional library: %s", lib);
+            libs += string(" -l") + lib;
+        }
+
+        log::debug("Configured library directories: %s", lib_dirs);
+        log::debug("Configured libraries: %s", libs);
         return true;
     }
 

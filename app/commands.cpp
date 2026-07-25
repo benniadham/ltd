@@ -14,8 +14,8 @@ namespace ltd
         args.bind_param(info.imports, "imports", "List of imports, separated by colon, to link with the project");
         
         args.bind_param(info.inc_dirs, "inc-dirs", "List of include directories separated by colon");
-        args.bind_param(info.inc_dirs, "lib-dirs", "List of lib directories separated by colon");
-        args.bind_param(info.inc_dirs, "libs", "List of libraries separated by colon");
+        args.bind_param(info.lib_dirs, "lib-dirs", "List of lib directories separated by colon");
+        args.bind_param(info.libs, "libs", "List of libraries separated by colon");
 
         args.bind_param(info.run, "run", "Specify executable to run after build");
         args.bind_param(info.run_args, "args", "Specify arguments for running executable");

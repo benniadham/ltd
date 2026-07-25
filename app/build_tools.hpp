@@ -73,7 +73,7 @@ namespace ltd
          * @param libraries A list of library names to include in the library path configuration.
          * @return true if the library paths were successfully configured, false otherwise.
          */
-        bool configure_lib_dir(const string_list& imports, const string_list& libraries);
+        bool configure_lib_dir(const string_list& imports, const string_list& libraries, const string_list& libdirs);
 
         /**
          * @brief
