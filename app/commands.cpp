@@ -35,7 +35,8 @@ namespace ltd
         args.add_command("help",  (int)Command::help, "Show this help");
 
         args.add_command("show", (int)Command::show, "Show some information on the screen.\n\t\t i.e 'ltd show home-path'.");
-
+        args.add_command("run", (int)Command::run, "Run the specified executable.\n\t\t i.e 'ltd run --run=app --args=\"arg1 arg2\"'.");
+        
         auto err = args.parse(); 
 
         if (err != err::no_error || args.size() < 1)
@@ -43,7 +44,7 @@ namespace ltd
 
         info.command = static_cast<Command>(args.get_command());
 
-        return err;
+        return err; 
     }
     
     void print_usage()

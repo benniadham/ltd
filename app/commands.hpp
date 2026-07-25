@@ -15,7 +15,8 @@ namespace ltd
         test,
         deploy,
         help,
-        show
+        show,
+        run
     };
 
     struct command_info

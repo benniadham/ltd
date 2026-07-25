@@ -264,6 +264,22 @@ auto main(int argc, char* argv[]) -> int
             show_config(config);            
         }        
         break;
+    case Command::run:
+        log::info("Command: run");
+        {
+            auto run_file = the_home.get_active_build_dir(cmd_info.debug_mode > 0) + "/" + cmd_info.run;
+            if(!fs::exists(run_file)) {
+                log::fatal("Run file does not exist: %s", run_file);
+                return -1;
+            }
+            log::info("Running executable: %s", run_file);
+            auto result = std::system((run_file + " " + cmd_info.run_args).c_str());
+            if(result != 0) {
+                log::fatal("Executable failed with exit code: %d", result);
+                return -1;  
+            }
+        }
+        break;
     default:
         log::error("Unknown command");
         break;
