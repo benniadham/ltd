@@ -49,6 +49,9 @@ namespace ltd
      */
     err parse_args(cli& args, command_info& info);
 
+    /**
+     * @brief Print the usage information for the command-line interface.
+     */
     void print_usage();
 }
 

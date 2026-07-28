@@ -45,9 +45,26 @@ app > _
     ```
     app > ltd build --target=app -vvv
     ```
-6. If you need to create library in this project you can add `lib` and `inc` directory to the project directory. Put your source files in the `lib` directory and your header files in `inc` directory.
+6. If you need to create library in this project you can add `lib` and `inc` directory to the project directory. Put your source files in the `lib` directory and your header files in `inc/you_project_name` directory. Your library will be named `libyour_library_name.a`.
 ```
 app > cd ..
 helloworld > mkdir lib
 helloworld > mkdir inc
+helloworld > cd inc
+helloworld > mkdir helloworld
 ```
+7. If you need to make more than one library, you can create them under `libs` directory instead. i.e.:
+```
+.
+└── helloworld
+    ├── apps
+    │   ├── application_1
+    │   └── application_2
+    ├── inc
+    │   ├── lib1
+    │   └── lib2
+    └── libs
+        ├── lib1
+        └── lib2
+```
+    In this example, your binaries will be named `app1` and `app2`. Your library will be named `lib1` and `lib2`.

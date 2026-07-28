@@ -1,3 +1,8 @@
+#include <iostream>
+#include <string>
+#include <array>
+#include <memory>
+#include <stdexcept>
 #include "../inc/ltd/cli.hpp"
 #include "../inc/ltd/fmt.hpp"
 #include "../inc/ltd/log.hpp"
@@ -10,6 +15,24 @@
 #include "ltd_home.hpp"
 
 using namespace ltd;
+
+std::string exec_and_capture_output(const std::string& cmd) {
+    std::array<char, 128> buffer;
+    std::string result;
+    
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+    
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+    
+    // Read the output chunk by chunk
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+    
+    return result;
+}
 
 auto main(int argc, char* argv[]) -> int
 {
@@ -37,8 +60,8 @@ auto main(int argc, char* argv[]) -> int
 
     if(the_home.is_active_project_set()) {
         log::debug("Active project is set to '%s'", the_home.get_active_project_name());
-        log::debug("Active project dir is '%s'", the_home.get_active_project_dir());
-    }        
+        log::trace("Active project dir is '%s'", the_home.get_active_project_dir());
+    }
 
     switch(cmd_info.command)
     {
@@ -86,14 +109,14 @@ auto main(int argc, char* argv[]) -> int
             build_tools tools;
             tools.configure(cmd_info);
             
-            log::debug("Active build dir is '%s'", the_home.get_active_build_dir(cmd_info.debug_mode > 0));
-
+            log::trace("Active build dir is '%s'", the_home.get_active_build_dir(cmd_info.debug_mode > 0));
             if (!fs::exists(the_home.get_active_build_dir(cmd_info.debug_mode > 0))) {
-                log::warn("Active build directory does not exist: %s", the_home.get_active_build_dir(cmd_info.debug_mode > 0));
-                log::info("Creating active build directory: %s", the_home.get_active_build_dir(cmd_info.debug_mode > 0));
+                log::warn("Active build directory for '%s' does not exist.", the_home.get_active_project_name());
+                log::info("Creating active build directory for '%s'", the_home.get_active_project_name());
                 fs::create_directories(the_home.get_active_build_dir(cmd_info.debug_mode > 0));
             }            
 
+            log::debug("Build target: '%s'", cmd_info.build_target);
             if (cmd_info.build_target.empty() || cmd_info.build_target == "all") 
             {
                 tools.build_libs();
@@ -197,7 +220,7 @@ auto main(int argc, char* argv[]) -> int
                 }
                 auto test_dir = the_home.get_active_build_dir(cmd_info.debug_mode > 0) + "/tests";
                 if(!fs::exists(test_dir)) {
-                    log::fatal("Test directory does not exist: %s", test_dir);
+                    log::fatal("Tests directory does not exist: %s", test_dir);
                     return -1;
                 }
                 for(const auto& dir_entry : fs::directory_iterator(test_dir)) {
@@ -207,15 +230,10 @@ auto main(int argc, char* argv[]) -> int
                         continue;
                     
                     auto filename = dir_entry.path().filename().replace_extension("");
-                    cli::printf("Running unit test %-13s ........................ ", filename);
-                    cli::flush();
-
                     auto exec = dir_entry.path();
                     exec += " -a";
-                    auto res = std::system(exec.c_str());
-                    if (res != 0) {
-                        cli::println("FAILED (exit code: %d)", res);
-                    }
+                    auto result = exec_and_capture_output(exec.string());
+                    log::info("Running unit test %-13s ........................ %s", filename, result.substr(0, result.find('\n')));
                 }
             } 
             else
@@ -235,8 +253,8 @@ auto main(int argc, char* argv[]) -> int
         }
         break;
     case Command::deploy:
-        log::info("Command: deploy");
         {
+            log::info("Deploying project: %s", the_home.get_active_project_name());
             // Copy the built files to the modules directory
             auto active_project = the_home.get_active_project_name();
             if(active_project.empty()) {
@@ -288,13 +306,13 @@ auto main(int argc, char* argv[]) -> int
         args.print_help();
         break;
     case Command::show:
-        log::info("Command: show");
         {
             auto [config, err] = args.at(1);
             if(err != err::no_error && (cmd_info.config_name.empty() || config.at(0) == '-')) {
-                log::error("Expected config name after 'show' command");
+                log::error("Expected config name after 'show' command. Run 'lts show ?' for help on 'show'.");
                 return 1;
             }
+            log::debug("Showing configuration for %s:%s", cmd_info.config_name.empty()? config : cmd_info.config_name);
             show_config(config);            
         }        
         break;

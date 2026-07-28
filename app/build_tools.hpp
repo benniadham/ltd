@@ -42,14 +42,48 @@ namespace ltd
         using build_plan = std::vector<build_task>;
 
     public:
+        /**
+         * @brief Construct a new build tools object
+         */
         build_tools();
 
+        /**
+         * @brief Configure the build tools based on the provided command information.
+         * 
+         * @param info The command information containing configuration details.
+         * @return true if the configuration was successful, false otherwise.
+         */
         bool configure(const command_info& info);
 
+        /**
+         * @brief Build the library targets based on the configured build plan.
+         * 
+         * @return true if the library targets were successfully built, false otherwise.
+         */
         bool build_libs();
+
+        /**
+         * @brief Build the application targets based on the configured build plan.
+         * 
+         * @return true if the application targets were successfully built, false otherwise.
+         */
         bool build_lib(const string& sub_dir, const string& name);
+
+        /**
+         * @brief Build the application targets based on the configured build plan.
+         * 
+         * @return true if the application targets were successfully built, false otherwise.
+         */
         bool build_apps() const;
+
+        /**
+         * @brief Build the application targets based on the configured build plan.
+         * 
+         * @return true if the application targets were successfully built, false otherwise.
+         */
         bool build_app(const string& sub_dir, const string& name) const; 
+
+        
         bool build_tests() const;
         
     private:        

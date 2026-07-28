@@ -14,7 +14,7 @@ namespace ltd
 
 	bool ignore_filter::is_ignored(const string& file_name) const
 	{
-		if (file_name.empty()) {
+		if (file_name.empty() || !is_loaded) {
 			return false;
 		}
 
@@ -64,6 +64,7 @@ namespace ltd
 			}
 		}
 
+		is_loaded = true;
 		return true;
 	}
 

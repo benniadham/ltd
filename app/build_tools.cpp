@@ -16,7 +16,6 @@ namespace ltd
     bool build_tools::configure(const command_info& info)
     {
         lib_header_ts = the_home.read_lib_header_ts();
-        log::debug("lib_header_ts: %s", ltd::string_ts(lib_header_ts));
 
         debug = info.debug_mode > 0;
 
@@ -45,13 +44,17 @@ namespace ltd
 
     bool build_tools::configure_lib_dir(const string_list& imports, const string_list& libraries, const string_list& libdirs)
     {
+        log::trace("Configuring library directories and libraries");
+
         // Add the active builds directory to the library search path
         auto project_build_dir = the_home.get_active_build_dir(debug);
+        log::trace("Adding active build directory to library search path: %s", project_build_dir);
         lib_dirs = string("-L") + project_build_dir;
 
         // Add import library paths
         for (const string& import : imports) {
             auto module_dir = the_home.get_module_dir(import);
+            log::trace("Adding import module directory to library search path: %s", module_dir);
             lib_dirs += string(" -L") + module_dir;
 
             string_list import_libs;
@@ -60,6 +63,7 @@ namespace ltd
                 continue;
             }
             for (const auto& lib : import_libs) {
+                log::trace("Adding imported library for linking: %s", lib);
                 libs += string(" -l") + lib;
             }
         }
@@ -77,18 +81,23 @@ namespace ltd
 
         log::debug("Configured library directories: %s", lib_dirs);
         log::debug("Configured libraries: %s", libs);
+        log::trace("Finished configuring library directories and libraries");
         return true;
     }
 
     bool build_tools::configure_inc_dir(const string_list& imports, const string_list& includes)
     {
+        log::trace("Configuring include directories");
+        
         // Add project include paths
+        log::trace("Adding project include directory: %s", the_home.get_active_project_inc_dir());
         inc_dirs = string("-I") + the_home.get_active_project_inc_dir();
 
         // Add import include paths
         for (const string& import : imports) {
             
             auto module_inc_dir = the_home.get_module_inc_dir(import);
+            log::trace("Adding import module include directory: %s", module_inc_dir);
             inc_dirs += string(" -I") + module_inc_dir;
 
             // Should we also add the project include directory for each import? 
@@ -99,15 +108,18 @@ namespace ltd
 
         // Additional include paths
         for (const string& include : includes) {
+            log::trace("Adding additional include directory: %s", include);
             inc_dirs += string(" -I") + include;
         }
 
+        log::debug("Configured include directories: %s", inc_dirs);
+        log::trace("Finished configuring include directories");
         return true;
     }
 
     bool build_tools::build_libs()  
     {
-        log::trace("Entering build_libs()");
+        log::trace("Trying to build library targets...");
 
         auto project_dir = the_home.get_active_project_dir();
         auto project_name = the_home.get_active_project_name();
@@ -144,11 +156,14 @@ namespace ltd
             }
         }
 
+        log::trace("Finished building library targets");
         return true;
     }
 
     bool build_tools::build_lib(const string& sub_dir, const string& name)  
     {
+        log::debug("Building library: %s from subdirectory: %s", name, sub_dir);
+
         // create plan
         build_plan plan;
 
@@ -157,34 +172,42 @@ namespace ltd
 
         if(plan_lib_creation(plan, sub_dir, name)==false)
             return false;
+        log::debug("Planned %d files for compilation and library creation", plan.size());
 
         // run the plan
         if(run_build_plan(plan) == false)
             return false;
+
+        log::trace("Successfully built library: %s", name);
+        log::trace("Adding library to link flags: %s", name);
         libs += (string(" -l") + name);
         return true;
     }
 
     bool build_tools::build_app(const string& sub_dir, const string& name)  const
     {
+        log::debug("Building application: %s from subdirectory: %s", name, sub_dir);
         // create plan
         build_plan plan;
 
         if(plan_dir_compilation(plan, sub_dir)==false)
             return false;   
+        log::debug("Planned %d files for compilation and binary linking", plan.size());
 
         if(plan_app_linking(plan, sub_dir, name)==false)
             return false;
             
         // run the plan
-        run_build_plan(plan);
+        if (run_build_plan(plan) == false)
+            return false;
 
+        log::trace("Successfully built application: %s", name);
         return true;
     }
 
     bool build_tools::build_apps() const
     {
-        log::trace("Entering build_apps()");
+        log::trace("Trying to build application targets...");
 
         auto project_dir = the_home.get_active_project_dir();
         auto project_name = the_home.get_active_project_name();
@@ -221,15 +244,20 @@ namespace ltd
 
     bool build_tools::build_tests()  const
     {
+        log::debug("Trying to build test targets...");
+
         // create plan
         build_plan plan;
         plan_dir_compilation(plan, "tests");
+        log::debug("Planned %d files for compilation", plan.size());
         run_build_plan(plan);
 
         plan.clear();
         plan_tests_linking(plan);
-        run_build_plan(plan);
+        if(run_build_plan(plan) == false)
+            return false;
 
+        log::trace("Successfully built test targets");
         return true;
     }
 
@@ -243,20 +271,12 @@ namespace ltd
         auto source_ts = fs::last_write_time(task.source);
         auto target_ts = fs::last_write_time(task.target);
 
-        log::trace("  Source ts: %s", ltd::string_ts(source_ts));
-        log::trace("  Target ts: %s", ltd::string_ts(target_ts));
-        log::trace("  Lib header ts: %s", ltd::string_ts(lib_header_ts));
-        log::trace("  Dir header ts: %s", ltd::string_ts(dir_ts));
+        log::trace("Source timestamp: %s", ltd::string_ts(source_ts));
+        log::trace("Target timestamp: %s", ltd::string_ts(target_ts));
 
         // If the source file has been modified, we need to recompile
         if(source_ts > target_ts || lib_header_ts > target_ts || dir_ts > target_ts)
-        {
-            log::debug("Recompilation needed for: %s", task.source);
             return true;
-        }
-        else
-            log::debug("No recompilation needed for: %s", task.source);
-        
         return false;
     }
 
@@ -294,7 +314,7 @@ namespace ltd
         task.type = LINK;
         task.source = dir + "/*.o";
         task.target = the_home.get_active_build_dir(debug) + "/" + name;
-        task.message = "Linking application " + task.target + "...";
+        task.message = "Linking application '" + name + "'...";
         plan.push_back(task);
 
         return true;
@@ -303,12 +323,12 @@ namespace ltd
     bool build_tools::plan_tests_linking(build_plan& plan) const
     {
         log::trace("Planning tests linking");
-
         auto dir = the_home.get_active_build_dir(debug) + "/tests";
         if (!fs::exists(dir)) {
             log::fatal("Missing build directory for tests: %s", dir);
             return false;
         }
+        log::trace("Looking for object files in: %s", dir);
 
         bool warn = true;
         for (const auto& entry : fs::directory_iterator(dir)) {
@@ -334,31 +354,38 @@ namespace ltd
     bool build_tools::plan_dir_compilation(build_plan& plan, const string& sub_dir) const 
     {
         log::trace("Planning compilation for directory: %s", sub_dir);
-
+        
         auto source_dir = the_home.get_active_project_dir() + "/" + sub_dir; 
+        log::trace("Source directory: %s", source_dir);
         if (!fs::exists(source_dir)) {
             log::fatal("Missing source directory to build: %s", source_dir); 
             return false; 
         }
 
         auto target_dir = the_home.get_active_build_dir(debug) + "/" + sub_dir; 
+        log::trace("Target build directory: %s", target_dir);
         if (!fs::exists(target_dir)) {
+            log::trace("Cannot find target build directory. Creating directory '%s'", target_dir);
             fs::create_directories(target_dir);
         }
 
+        log::trace("Looking for .ignore file...");
+        auto ignore_file_path = source_dir + "/.ignore";
         ignore_filter filter(source_dir + "/.ignore");
-        if(filter.load_patterns() == false) {
-            log::trace("Failed to load ignore patterns from: %s", source_dir);
+        if (fs::exists(ignore_file_path)) {
+            log::trace("Found .ignore file. Loading...");
+            if(filter.load_patterns() == false) 
+                log::warn("Failed to load .ignore");
         }
-
-        auto dir_header_ts = the_home.get_headers_write_time(source_dir);
         
+        auto dir_header_ts = the_home.get_headers_write_time(source_dir);
+        log::trace("Library header timestamp: %s", ltd::string_ts(lib_header_ts));
+        log::trace("Directory header timestamp: %s", ltd::string_ts(dir_header_ts));
         for (auto dir_entry : fs::directory_iterator(source_dir)) {
             if (dir_entry.is_directory()) 
                 continue;
 
             auto ext = dir_entry.path().extension();
-
             if (ext == ".cpp" || ext == ".cc" || ext == ".cxx") {
                 
                 string file_name = dir_entry.path().filename();
@@ -380,6 +407,7 @@ namespace ltd
 
                 log::trace("Source: %s\nTarget: %s", task.source, task.target);
                 if (need_recompile(task, dir_header_ts)) {
+                    log::debug("Adding '%s' for compilation...", file_name);
                     plan.push_back(task);
                 }                                                 
             }

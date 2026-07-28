@@ -20,6 +20,34 @@ C++ code. It does so by providing:
 > LTD_HOME=/path/to/your/ltd_home; export LTD_HOME
 > source ./bootstrap.sh
 ```
+## Directory Structure
+
+In this example 'myproject1' has multiple applications and multiple library. 'myproject2' only
+has 1 application and 1 library. The names of the binaries are 'myproject2' and 'myproject2.a'
+consecutively.
+
+```
+$LTD_HOME
+  .
+  ├── modules
+  │   └── myproject1
+  │       └── inc
+  ├── builds
+  └── projects
+      ├── myproject1
+      │   ├── apps
+      │   │   ├── myapp1
+      │   │   └── myapp2
+      │   ├── inc
+      │   ├── libs
+      │   │   ├── mylib1
+      │   │   └── mylib2
+      │   └── tests
+      └── myproject2
+          ├── app
+          ├── lib
+          └── tests
+```
 
 ## Testing
 To use the test framework, one might use it as follow:
@@ -61,36 +89,3 @@ argument.
 ```
 
 Test id starts from 0. In this example, the program will run the second test case.
-
-## Directory Structure
-
-In this example 'myproject1' has multiple applications and multiple library. 'myproject2' only
-has 1 application and 1 library. The names of the binaries are 'myproject2' and 'myproject2.a'
-consecutively.
-
-```
-$LTD_HOME
-  +- modules
-  |    +- myproject1
-  |         +- inc
-  |
-  +- builds
-  |
-  +- projects
-      +- myproject1
-      |    +- apps
-      |    |  +- myapp1
-      |    |  +- myapp2
-      |    +- doc
-      |    +- inc
-      |    +- libs
-      |    |  +- mylib1
-      |    |  +- mylib2
-      |    +- tests
-      |
-      +- myproject2
-          +- app
-          +- doc
-          +- lib
-          +- tests
-```
